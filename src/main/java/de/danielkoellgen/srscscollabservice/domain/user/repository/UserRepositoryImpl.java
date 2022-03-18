@@ -32,10 +32,11 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void save(User user) {
         UserByUserIdMap userByUserIdMap = new UserByUserIdMap(user);
-        cassandraTemplate.insert(userByUserIdMap);
-
         UserByUsernameMap userByUsernameMap = new UserByUsernameMap(user);
-        cassandraTemplate.insert(userByUsernameMap);
+        cassandraTemplate.batchOps()
+                .insert(userByUserIdMap)
+                .insert(userByUsernameMap)
+                .execute();
     }
 
     @Override
