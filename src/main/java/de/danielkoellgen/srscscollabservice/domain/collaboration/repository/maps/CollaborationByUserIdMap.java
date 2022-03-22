@@ -1,5 +1,6 @@
 package de.danielkoellgen.srscscollabservice.domain.collaboration.repository.maps;
 
+import lombok.NoArgsConstructor;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
@@ -8,7 +9,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 import java.util.List;
 import java.util.UUID;
 
-@Table(value = "collaboration_by_deckid")
+@Table(value = "collaboration_by_userid")
 public record CollaborationByUserIdMap(
 
         @PrimaryKeyColumn(name = "user_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
