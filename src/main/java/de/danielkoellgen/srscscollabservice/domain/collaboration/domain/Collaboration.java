@@ -61,8 +61,8 @@ public class Collaboration {
         getParticipants().get(userId).endParticipation(transactionId);
     }
 
-    public void setDeck(@NotNull UUID transactionId, @NotNull UUID userId, @NotNull Deck deck) {
-        getParticipants().get(userId).setDeck(transactionId, deck); // TODO check transactionId concept
+    public void setDeck(@NotNull UUID userId, @NotNull UUID deckCorrelationId, @NotNull Deck deck) {
+        getParticipants().get(userId).setDeck(deckCorrelationId, deck);
     }
 
     public CollaborationStatus getCollaborationStatus() {

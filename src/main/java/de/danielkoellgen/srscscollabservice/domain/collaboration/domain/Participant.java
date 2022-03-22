@@ -25,7 +25,7 @@ public class Participant {
 
     @Getter
     @NotNull
-    private UUID deckCorrelationId; // TODO replace with correlationId. The id got nothing to do with transactions.
+    private UUID deckCorrelationId;
 
     @Getter
     @NotNull
