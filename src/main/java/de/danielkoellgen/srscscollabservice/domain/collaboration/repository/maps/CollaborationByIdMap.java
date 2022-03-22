@@ -14,23 +14,23 @@ public record CollaborationByIdMap(
         @PrimaryKeyColumn(name = "collaboration_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
         UUID collaborationId,
 
-        @PrimaryKeyColumn(name = "participation_user_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
-        UUID participationUserId,
+        @PrimaryKeyColumn(name = "participant_user_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
+        UUID participantUserId,
 
         @Column(value = "collaboration_name", isStatic = true)
         String collaborationName,
 
-        @Column("participation_username")
-        String participationUsername,
+        @Column("participant_username")
+        String participantUsername,
 
-        @Column("participation_deck_id")
-        UUID participationDeckId,
+        @Column("participant_deck_id")
+        UUID participantDeckId,
 
-        @Column("participation_deck_correlation_id")
-        UUID participationDeckCorrelationId,
+        @Column("participant_deck_correlation_id")
+        UUID participantDeckCorrelationId,
 
-        @Column("participation_status")
-        List<?> participationStatus
+        @Column("participant_status")
+        List<?> participantStatus
 ) {
     //TODO
 }

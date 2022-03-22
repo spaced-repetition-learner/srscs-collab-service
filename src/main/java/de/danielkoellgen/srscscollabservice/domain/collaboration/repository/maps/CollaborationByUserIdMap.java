@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Table(value = "collaboration_by_deckid")
-public record CollaborationByUserId(
+public record CollaborationByUserIdMap(
 
         @PrimaryKeyColumn(name = "user_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
         UUID userId,
@@ -30,6 +30,6 @@ public record CollaborationByUserId(
         UUID participantDeckId,
 
         @Column("participant_status")
-        List<ParticipationStateMap> participantStatus
+        List<?> participantStatus
 ) {
 }
