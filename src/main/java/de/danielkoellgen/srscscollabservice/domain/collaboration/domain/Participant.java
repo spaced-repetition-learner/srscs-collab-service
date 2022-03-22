@@ -1,5 +1,6 @@
 package de.danielkoellgen.srscscollabservice.domain.collaboration.domain;
 
+import de.danielkoellgen.srscscollabservice.domain.core.IllegalEntityPersistenceState;
 import de.danielkoellgen.srscscollabservice.domain.deck.domain.Deck;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
 import lombok.AllArgsConstructor;
@@ -24,29 +25,28 @@ public class Participant {
 
     @Getter
     @NotNull
-    private UUID deckTransactionId;
+    private UUID deckCorrelationId; // TODO replace with correlationId. The id got nothing to do with transactions.
 
     @Getter
     @NotNull
     private List<State> status;
 
 
-    public static Participant createParticipationAsInvited(UUID transactionId, User user) {
-        return new Participant(user, null, null, new ArrayList<>(List.of(
+    public static @NotNull Participant createNewParticipant(@NotNull UUID transactionId, @NotNull User user) {
+        return new Participant(user, null, UUID.randomUUID(), new ArrayList<>(List.of(
                 new State(transactionId, ParticipantStatus.INVITED, LocalDateTime.now())
         )));
     }
 
-    public void acceptParticipation(UUID transactionId) throws ParticipantStateException {
-        if (getCurrentState().status() == ParticipantStatus.INVITED) {
-            status.add(new State(transactionId, ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now()));
-            return;
+    public void acceptParticipation(@NotNull UUID transactionId) throws ParticipantStateException {
+        if (getCurrentState().status() != ParticipantStatus.INVITED) {
+            throw new ParticipantStateException("Accepting a participation whose status is "+getCurrentState().status()+
+                    " is not allowed.");
         }
-        throw new ParticipantStateException("Accepting a participation whose status is "+getCurrentState().status()+
-                " is not allowed.");
+        status.add(new State(transactionId, ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now()));
     }
 
-    public void endParticipation(UUID transactionId) throws ParticipantStateException {
+    public void endParticipation(@NotNull UUID transactionId) throws ParticipantStateException {
         if (getCurrentState().status() == ParticipantStatus.INVITED) {
             status.add(new State(transactionId, ParticipantStatus.INVITATION_DECLINED, LocalDateTime.now()));
             return;
@@ -59,15 +59,8 @@ public class Participant {
                 " is not allowed.");
     }
 
-    public void setDeckTransactionId(UUID deckTransactionId) {
-        if (deckTransactionId != null) {
-            throw new IllegalStateException("Deck-TransactionId has already been set.");
-        }
-        this.deckTransactionId = deckTransactionId;
-    }
-
-    public void setDeck(UUID deckTransactionId, Deck deck) {
-        if (deckTransactionId != this.deckTransactionId) {
+    public void setDeck(@NotNull UUID deckCorrelationId, @NotNull Deck deck) {
+        if (deckCorrelationId != this.deckCorrelationId) {
             throw new IllegalArgumentException("Deck does not match transaction-id");
         }
         if (deck.getUser().getUserId() != this.user.getUserId()) {
@@ -76,14 +69,14 @@ public class Participant {
         this.deck = deck;
     }
 
-    public @NotNull Deck getDeck() throws IllegalStateException {
-        if (deck == null) {
-            throw new IllegalStateException("Deck has not been added yet. Status is "+getCurrentState().status()+".");
-        }
-        return deck;
+    public @NotNull State getCurrentState() {
+        return status.stream().max((x, y) -> x.createdAt().compareTo(y.createdAt())).get();
     }
 
-    public State getCurrentState() {
-        return status.stream().max((x, y) -> x.createdAt().compareTo(y.createdAt())).get();
+    public @NotNull Deck getDeck() {
+        if (deck == null) {
+            throw new IllegalEntityPersistenceState("[deck] not instantiated while trying to access it.");
+        }
+        return deck;
     }
 }

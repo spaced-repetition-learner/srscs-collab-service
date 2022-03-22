@@ -35,7 +35,7 @@ public class Collaboration {
             @NotNull List<User> invitedUsers) {
         Map<UUID, Participant> participants = invitedUsers.stream()
                 .collect(Collectors.toMap(User::getUserId,
-                        user -> Participant.createParticipationAsInvited(transactionId, user))
+                        user -> Participant.createNewParticipant(transactionId, user))
                 );
         return new Collaboration(UUID.randomUUID(), name, participants);
     }
@@ -47,14 +47,13 @@ public class Collaboration {
         if (getParticipants().containsKey(user.getUserId())) {
             throw new CollaborationStateException("User is already participating.");
         }
-        getParticipants().put(user.getUserId(), Participant.createParticipationAsInvited(transactionId, user));
+        getParticipants().put(user.getUserId(), Participant.createNewParticipant(transactionId, user));
         //TODO clone deck somehow
     }
 
     public Boolean acceptInvitation(@NotNull UUID transactionId, @NotNull UUID userId) throws ParticipantStateException {
         Participant participant = getParticipants().get(userId);
         participant.acceptParticipation(transactionId);
-        participant.setDeckTransactionId(transactionId); //TODO remove this
         return true;
     }
 
