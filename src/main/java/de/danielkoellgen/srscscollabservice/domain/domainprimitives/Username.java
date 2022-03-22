@@ -8,11 +8,10 @@ import org.jetbrains.annotations.NotNull;
 
 
 @EqualsAndHashCode(callSuper = false)
-@NoArgsConstructor
 public class Username extends AbstractStringValidation {
 
     @Getter
-    private String username;
+    private final String username;
 
     public Username(@NotNull String username) throws Exception {
         validateUsernameOrThrow(username);
