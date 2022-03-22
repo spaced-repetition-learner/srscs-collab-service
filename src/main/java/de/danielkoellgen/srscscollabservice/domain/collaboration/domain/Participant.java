@@ -85,4 +85,8 @@ public class Participant {
         }
         return deckCorrelationId;
     }
+
+    public @NotNull UUID getUserId() {
+        return user.getUserId();
+    }
 }
