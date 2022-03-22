@@ -23,8 +23,7 @@ public class Participant {
     @Nullable
     private Deck deck;
 
-    @Getter
-    @NotNull
+    @Nullable
     private UUID deckCorrelationId;
 
     @Getter
@@ -78,5 +77,12 @@ public class Participant {
             throw new IllegalEntityPersistenceState("[deck] not instantiated while trying to access it.");
         }
         return deck;
+    }
+
+    public @NotNull UUID getDeckCorrelationId() {
+        if (deckCorrelationId == null) {
+            throw new IllegalEntityPersistenceState("[deckTransactionId] not instantiated while trying to access it.");
+        }
+        return deckCorrelationId;
     }
 }
