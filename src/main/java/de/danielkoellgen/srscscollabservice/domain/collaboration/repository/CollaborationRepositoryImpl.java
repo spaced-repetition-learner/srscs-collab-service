@@ -51,15 +51,17 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
                     participant.getStatus().stream().map(ParticipantStateMap::new).toList()
             ));
 
-            mappedByUserIds.add(new CollaborationByUserIdMap(
-                    participant.getUser().getUserId(),
-                    collaboration.getCollaborationId(),
-                    participant.getUser().getUserId(),
-                    collaboration.getName().getName(),
-                    participant.getUser().getUsername().getUsername(),
-                    null,
-                    participant.getStatus().stream().map(ParticipantStateMap::new).toList()
-            ));
+            for (Participant innerParticipant: collaboration.getParticipants().values()) {
+                mappedByUserIds.add(new CollaborationByUserIdMap(
+                        participant.getUser().getUserId(),
+                        collaboration.getCollaborationId(),
+                        innerParticipant.getUser().getUserId(),
+                        collaboration.getName().getName(),
+                        innerParticipant.getUser().getUsername().getUsername(),
+                        null,
+                        innerParticipant.getStatus().stream().map(ParticipantStateMap::new).toList()
+                ));
+            }
 
             mappedByDeckCorrelationIds.add(new CollaborationByDeckCorrelationIdMap(
                     participant.getDeckCorrelationId(),
@@ -86,5 +88,28 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
             return Optional.empty();
         }
         return Optional.of(CollaborationByIdMap.mapToEntityFromDatabase(byIdMaps));
+    }
+
+    @Override
+    public @NotNull Optional<UUID> findCollaborationIdByDeckCorrelationId(@NotNull UUID deckCorrelationId) {
+        CollaborationByDeckCorrelationIdMap map = cassandraTemplate.selectOne(
+                query(where("deck_correlation_id").is(deckCorrelationId)),
+                CollaborationByDeckCorrelationIdMap.class
+        );
+        return map != null ? Optional.of(map.getCollaborationId()) : Optional.empty();
+    }
+
+    @Override
+    public @NotNull Optional<Collaboration> findCollaborationByDeckCorrelationId(@NotNull UUID deckCorrelationId) {
+        Optional<UUID> collaborationId = findCollaborationIdByDeckCorrelationId(deckCorrelationId);
+        if (collaborationId.isEmpty()) {
+            return Optional.empty();
+        }
+        return findCollaborationById(collaborationId.get());
+    }
+
+    @Override
+    public @NotNull List<Collaboration> findCollaborationsByUserId(@NotNull UUID userId) {
+        return List.of();
     }
 }

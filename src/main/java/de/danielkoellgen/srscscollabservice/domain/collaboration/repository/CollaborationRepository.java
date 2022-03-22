@@ -4,6 +4,7 @@ import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collabor
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Participant;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,4 +15,10 @@ public interface CollaborationRepository {
     void saveNewParticipant(@NotNull Collaboration collaboration, @NotNull Participant newParticipant);
 
     @NotNull Optional<Collaboration> findCollaborationById(@NotNull UUID collaborationId);
+
+    @NotNull Optional<UUID> findCollaborationIdByDeckCorrelationId(@NotNull UUID deckCorrelationId);
+
+    @NotNull Optional<Collaboration> findCollaborationByDeckCorrelationId(@NotNull UUID deckCorrelationId);
+
+    @NotNull List<Collaboration> findCollaborationsByUserId(@NotNull UUID userId);
 }
