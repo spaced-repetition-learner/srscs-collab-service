@@ -1,6 +1,8 @@
 package de.danielkoellgen.srscscollabservice.domain.collaboration.domain;
 
+import de.danielkoellgen.srscscollabservice.domain.core.IllegalEntityPersistenceState;
 import de.danielkoellgen.srscscollabservice.domain.deck.domain.Deck;
+import de.danielkoellgen.srscscollabservice.domain.domainprimitives.DeckName;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,67 +13,82 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-@Getter
 @AllArgsConstructor
 public class Collaboration {
 
+    @Getter
     @NotNull
     private final UUID collaborationId;
 
     @Nullable
-    private String name;
+    private DeckName name;
 
     @Nullable
     private Map<UUID, Participant> participants;
 
-    public Collaboration(UUID collaborationId) {
+
+    public Collaboration(@NotNull UUID collaborationId) {
         this.collaborationId = collaborationId;
     }
 
-    public static Collaboration startNewCollaboration(UUID transactionId, String name, List<User> invitedUsers) {
+    public static @NotNull Collaboration startNewCollaboration(@NotNull UUID transactionId, @NotNull DeckName name,
+            @NotNull List<User> invitedUsers) {
         Map<UUID, Participant> participants = invitedUsers.stream()
                 .collect(Collectors.toMap(User::getUserId,
-                        user -> Participant.createParticipationAsInvited(transactionId, user)));
+                        user -> Participant.createParticipationAsInvited(transactionId, user))
+                );
         return new Collaboration(UUID.randomUUID(), name, participants);
     }
 
-
-    public void inviteParticipant(UUID transactionId, User user) throws CollaborationStateException{
+    public void inviteParticipant(@NotNull UUID transactionId, @NotNull User user) throws CollaborationStateException{
         if (getCollaborationStatus() == CollaborationStatus.TERMINATED) {
             throw new CollaborationStateException("Collaboration has already ended.");
         }
-        if (participants.containsKey(user.getUserId())) {
+        if (getParticipants().containsKey(user.getUserId())) {
             throw new CollaborationStateException("User is already participating.");
         }
-        participants.put(user.getUserId(), Participant.createParticipationAsInvited(transactionId, user));
+        getParticipants().put(user.getUserId(), Participant.createParticipationAsInvited(transactionId, user));
+        //TODO clone deck somehow
     }
 
-    public Boolean acceptInvitation(UUID transactionId, UUID userId) throws ParticipantStateException {
-        participants.get(userId).acceptParticipation(transactionId);
-        participants.get(userId).setDeckTransactionId(transactionId);
+    public Boolean acceptInvitation(@NotNull UUID transactionId, @NotNull UUID userId) throws ParticipantStateException {
+        Participant participant = getParticipants().get(userId);
+        participant.acceptParticipation(transactionId);
+        participant.setDeckTransactionId(transactionId); //TODO remove this
         return true;
     }
 
-    public void endParticipation(UUID transactionId, UUID userId) throws ParticipantStateException {
-        participants.get(userId).endParticipation(transactionId);
+    public void endParticipation(@NotNull UUID transactionId, @NotNull UUID userId) throws ParticipantStateException {
+        getParticipants().get(userId).endParticipation(transactionId);
     }
 
-    public void setDeck(UUID transactionId, UUID userId, Deck deck) {
-        participants.get(userId).setDeck(transactionId, deck);
+    public void setDeck(@NotNull UUID transactionId, @NotNull UUID userId, @NotNull Deck deck) {
+        getParticipants().get(userId).setDeck(transactionId, deck); // TODO check transactionId concept
     }
 
     public CollaborationStatus getCollaborationStatus() {
-        AtomicReference<Integer> participants = new AtomicReference<>(0);
-        this.participants.forEach((userId, participant) -> {
+        AtomicReference<Integer> activeOrInvitedParticipantCount = new AtomicReference<>(0);
+        getParticipants().forEach((userId, participant) -> {
             switch(participant.getCurrentState().status()) {
-                case INVITED -> participants.set(participants.get() + 1);
-                case INVITATION_ACCEPTED -> participants.getAndSet(participants.get() + 1);
+                case INVITED -> activeOrInvitedParticipantCount.set(activeOrInvitedParticipantCount.get() + 1);
+                case INVITATION_ACCEPTED -> activeOrInvitedParticipantCount.getAndSet(
+                        activeOrInvitedParticipantCount.get() + 1);
             }
         });
-        if (participants.get() >= 2) {
-            return CollaborationStatus.ACTIVE;
-        } else {
-            return CollaborationStatus.TERMINATED;
+        return activeOrInvitedParticipantCount.get() >= 2 ? CollaborationStatus.ACTIVE : CollaborationStatus.TERMINATED;
+    }
+
+    public @NotNull DeckName getName() {
+        if (name == null) {
+            throw new IllegalEntityPersistenceState("[name] not instantiated while trying to access it.");
         }
+        return name;
+    }
+
+    public @NotNull Map<UUID, Participant> getParticipants() {
+        if (participants == null) {
+            throw new IllegalEntityPersistenceState("[participants] not instantiated while trying to access it.");
+        }
+        return participants;
     }
 }
