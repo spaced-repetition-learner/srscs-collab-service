@@ -15,6 +15,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Query.query;
 
 @Component
 @Scope("singleton")
@@ -64,5 +69,22 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
         mappedByIds.forEach(cassandraTemplate::insert);
         mappedByUserIds.forEach(cassandraTemplate::insert);
         mappedByDeckCorrelationIds.forEach(cassandraTemplate::insert);
+    }
+
+    @Override
+    public void saveNewParticipant(@NotNull Collaboration collaboration, @NotNull Participant newParticipant) {
+
+    }
+
+    @Override
+    public @NotNull Optional<Collaboration> findCollaborationById(@NotNull UUID collaborationId) {
+        List<CollaborationByIdMap> byIdMaps = cassandraTemplate.select(
+                query(where("collaboration_id").is(collaborationId)),
+                CollaborationByIdMap.class
+        );
+        if (byIdMaps.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(CollaborationByIdMap.mapToEntityFromDatabase(byIdMaps));
     }
 }
