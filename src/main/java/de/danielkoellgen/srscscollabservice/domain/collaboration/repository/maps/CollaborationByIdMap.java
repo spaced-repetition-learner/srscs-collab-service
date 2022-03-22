@@ -30,7 +30,7 @@ public record CollaborationByIdMap(
         UUID participantDeckCorrelationId,
 
         @Column("participant_status")
-        List<?> participantStatus
+        List<ParticipantStateMap> participantStatus
 ) {
     //TODO
 }
