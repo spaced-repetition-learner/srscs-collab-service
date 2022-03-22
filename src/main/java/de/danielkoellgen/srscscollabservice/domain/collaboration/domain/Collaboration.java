@@ -40,15 +40,17 @@ public class Collaboration {
         return new Collaboration(UUID.randomUUID(), name, participants);
     }
 
-    public void inviteParticipant(@NotNull UUID transactionId, @NotNull User user) throws CollaborationStateException{
+    public @NotNull Participant inviteParticipant(@NotNull UUID transactionId, @NotNull User user)
+            throws CollaborationStateException{
         if (getCollaborationStatus() == CollaborationStatus.TERMINATED) {
             throw new CollaborationStateException("Collaboration has already ended.");
         }
         if (getParticipants().containsKey(user.getUserId())) {
             throw new CollaborationStateException("User is already participating.");
         }
-        getParticipants().put(user.getUserId(), Participant.createNewParticipant(transactionId, user));
-        //TODO clone deck somehow
+        Participant newParticipant = Participant.createNewParticipant(transactionId, user);
+        getParticipants().put(user.getUserId(), newParticipant);
+        return newParticipant;
     }
 
     public Boolean acceptInvitation(@NotNull UUID transactionId, @NotNull UUID userId) throws ParticipantStateException {
