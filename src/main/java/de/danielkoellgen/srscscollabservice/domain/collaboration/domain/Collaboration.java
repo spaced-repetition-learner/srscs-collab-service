@@ -13,10 +13,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+@Getter
 @AllArgsConstructor
 public class Collaboration {
 
-    @Getter
     @NotNull
     private final UUID collaborationId;
 
@@ -25,7 +25,6 @@ public class Collaboration {
 
     @Nullable
     private Map<UUID, Participant> participants;
-
 
     public Collaboration(@NotNull UUID collaborationId) {
         this.collaborationId = collaborationId;
@@ -79,17 +78,12 @@ public class Collaboration {
         return activeOrInvitedParticipantCount.get() >= 2 ? CollaborationStatus.ACTIVE : CollaborationStatus.TERMINATED;
     }
 
-    public @NotNull DeckName getName() {
-        if (name == null) {
-            throw new IllegalEntityPersistenceState("[name] not instantiated while trying to access it.");
-        }
-        return name;
-    }
-
-    public @NotNull Map<UUID, Participant> getParticipants() {
-        if (participants == null) {
-            throw new IllegalEntityPersistenceState("[participants] not instantiated while trying to access it.");
-        }
-        return participants;
+    @Override
+    public String toString() {
+        return "Collaboration{" +
+                "collaborationId=" + collaborationId +
+                ", name=" + name +
+                ", participants=" + participants +
+                '}';
     }
 }

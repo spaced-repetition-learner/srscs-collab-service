@@ -1,6 +1,5 @@
 package de.danielkoellgen.srscscollabservice.domain.collaboration.domain;
 
-import de.danielkoellgen.srscscollabservice.domain.core.IllegalEntityPersistenceState;
 import de.danielkoellgen.srscscollabservice.domain.deck.domain.Deck;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
 import lombok.AllArgsConstructor;
@@ -13,20 +12,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
 @AllArgsConstructor
 public class Participant {
 
-    @Getter
     @NotNull
     private User user;
 
     @Nullable
     private Deck deck;
 
-    @Nullable
-    private UUID deckCorrelationId;
+    @NotNull
+    private final UUID deckCorrelationId;
 
-    @Getter
     @NotNull
     private List<State> status;
 
@@ -72,21 +70,17 @@ public class Participant {
         return status.stream().max((x, y) -> x.createdAt().compareTo(y.createdAt())).get();
     }
 
-    public @NotNull Deck getDeck() {
-        if (deck == null) {
-            throw new IllegalEntityPersistenceState("[deck] not instantiated while trying to access it.");
-        }
-        return deck;
-    }
-
-    public @NotNull UUID getDeckCorrelationId() {
-        if (deckCorrelationId == null) {
-            throw new IllegalEntityPersistenceState("[deckTransactionId] not instantiated while trying to access it.");
-        }
-        return deckCorrelationId;
-    }
-
     public @NotNull UUID getUserId() {
         return user.getUserId();
+    }
+
+    @Override
+    public String toString() {
+        return "Participant{" +
+                "user=" + user +
+                ", deck=" + deck +
+                ", deckCorrelationId=" + deckCorrelationId +
+                ", status=" + status +
+                '}';
     }
 }

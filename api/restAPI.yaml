@@ -35,9 +35,9 @@ paths:
           schema:
             $ref: "#/components/schemas/uuid"
         - in: query
-          name: participation-status
+          name: participant-status
           schema:
-            $ref: "#/components/schemas/participationStatus"
+            $ref: "#/components/schemas/participantStatus"
       responses:
         200:
           description: Retrieves all matching collaborations.
@@ -65,7 +65,7 @@ paths:
         404:
           description: Collaboration not found.
 
-  "/collaborations/{collaboration-id}/participations":
+  "/collaborations/{collaboration-id}/participants":
     post:
       summary: Invites a new user to the existing collaboration.
       tags:
@@ -77,53 +77,42 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/newParticipationRequstBody"
+              $ref: "#/components/schemas/newParticipantRequestBody"
       responses:
         201:
           description: User invited.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/participation"
+                $ref: "#/components/schemas/participant"
         404:
           description: Collaboration or user not found.
 
-    get:
-      summary: Retrieves all participations.
+    delete:
+      summary: Declines or ends the participation.
       tags:
         - /collaborations
       parameters:
         - $ref: "#/components/parameters/collaborationId"
+        - in: query
+          required: true
+          name: user-id
+          schema:
+            $ref: "#/components/schemas/uuid"
       responses:
         200:
-          description: Retrieves all participations.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/participation"
+          description: Participant disabled.
         404:
-          description: Collaboration not found.
+          description: Participant not found.
 
-  "/collaborations/{collaboration-id}/participations/{user-id}/state":
+  "/collaborations/{collaboration-id}/participants/{user-id}/state":
     post:
       summary: Accepts the invitation.
       tags:
         - /collaborations
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - status
-              properties:
-                status:
-                  type: string
-                  enum:
-                    - accepted
+      parameters:
+        - $ref: "#/components/parameters/collaborationId"
+        - $ref: "#/components/parameters/userId"
       responses:
         201:
           description: Invitation accepted.
@@ -131,16 +120,6 @@ paths:
           description: Invitation already accepted or trying to override a terminated state.
         404:
           description: Collaboration or user not found.
-
-  "/collaborations/{collaboration-id}/participations/{user-id}":
-    delete:
-      summary: Declines or ends the participation.
-      tags:
-        - /collaborations
-      responses:
-        200:
-          description: Participation disabled.
-
 
 components:
   schemas:
@@ -155,40 +134,39 @@ components:
       example: "dadepu"
       pattern: '^([A-Za-z0-9]){4,16}$'
 
-    deckname:
+    deckName:
       type: string
       example: "TH Koeln DB2"
       pattern: '^([A-Za-z0-9]){4,16}$'
 
-    participationStateStatus:
+    participantStateStatus:
       type: string
       enum:
         - invited
         - accepted
         - terminated
 
-    participationState:
+    participantState:
       type: object
       required:
         - status
         - date
       properties:
         status:
-          $ref: "#/components/schemas/participationStateStatus"
+          $ref: "#/components/schemas/participantStateStatus"
         date:
           type: string
           format: date-time
 
-    participationStatus:
+    participantStatus:
       type: string
       enum:
-        - waiting-for-others
-        - invited
-        - invitation-declined
-        - active
-        - terminated
+        - INVITED
+        - INVITATION_ACCEPTED
+        - INVITATION_DECLINED
+        - TERMINATED
 
-    participation:
+    participant:
       type: object
       required:
         - userId
@@ -198,59 +176,49 @@ components:
       properties:
         userId:
           $ref: "#/components/schemas/uuid"
-        participationStatus:
-          $ref: "#/components/schemas/participationStatus"
-        stateActivities:
-          type: array
-          items:
-            $ref: "#/components/schemas/participationState"
+        participantStatus:
+          $ref: "#/components/schemas/participantStatus"
         deck:
             type: object
             nullable: true
             required:
               - deckId
-              - deckname
             properties:
               deckId:
                 $ref: "#/components/schemas/uuid"
-              deckname:
-                $ref: "#/components/schemas/deckname"
 
     collaboration:
       type: object
       required:
         - collaborationId
-        - name
+        - collaborationName
         - participations
       properties:
         collaborationId:
           $ref: "#/components/schemas/uuid"
-        name:
-          $ref: "#/components/schemas/deckname"
-        participations:
+        collaborationName:
+          $ref: "#/components/schemas/deckName"
+        participants:
           type: array
           items:
-            $ref: "#/components/schemas/participation"
+            $ref: "#/components/schemas/participant"
 
     newCollaborationRequestBody:
       type: object
       required:
-        - userId
-        - userInvitations
-        - name
+        - invitedUsers
+        - collaborationName
       properties:
-        userId:
-          $ref: "#/components/schemas/uuid"
-        userInvitations:
+        invitedUsers:
           type: array
           items:
             allOf:
               - $ref: "#/components/schemas/username"
               - minItems: 1
-        name:
-          $ref: "#/components/schemas/deckname"
+        collaborationName:
+          $ref: "#/components/schemas/deckName"
 
-    newParticipationRequstBody:
+    newParticipantRequestBody:
       type: object
       required:
         - username
@@ -258,7 +226,7 @@ components:
         username:
           $ref: "#/components/schemas/username"
 
-    newParticipationStateRequestBody:
+    newParticipantStateRequestBody:
       type: object
       required:
         - status

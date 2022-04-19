@@ -25,4 +25,11 @@ public class DeckName extends AbstractStringValidation {
     private Exception mapToDeckNameException(String message) {
         return new DeckNameException(message);
     }
+
+    @Override
+    public String toString() {
+        return "DeckName{" +
+                "name='" + name + '\'' +
+                '}';
+    }
 }

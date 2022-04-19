@@ -9,20 +9,21 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
+@Getter
 @AllArgsConstructor
 public class Deck {
 
-    @Getter
     @NotNull
     private final UUID deckId;
 
     @Nullable
     private User user;
 
-    public @NotNull User getUser() {
-        if (user == null) {
-            throw new IllegalEntityPersistenceState("[user] not instantiated while trying to access it.");
-        }
-        return user;
+    @Override
+    public String toString() {
+        return "Deck{" +
+                "deckId=" + deckId +
+                ", user=" + user +
+                '}';
     }
 }
