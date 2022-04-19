@@ -27,4 +27,23 @@ public enum ParticipantStatus {
             default -> throw new IllegalMappingException("Failed to map ParticipantStatus. Number is [" + number + "].");
         };
     }
+
+    public static @NotNull String toStringFromEnum(@NotNull ParticipantStatus status) {
+        return switch(status) {
+            case INVITED                -> "INVITED";
+            case INVITATION_ACCEPTED    -> "INVITATION_ACCEPTED";
+            case INVITATION_DECLINED    -> "INVITATION_DECLINED";
+            case TERMINATED             -> "TERMINATED";
+        };
+    }
+
+    public static @NotNull ParticipantStatus toEnumFromString(@NotNull String status) {
+        return switch(status) {
+            case "INVITED"              -> ParticipantStatus.INVITED;
+            case "INVITATION_ACCEPTED"  -> ParticipantStatus.INVITATION_ACCEPTED;
+            case "INVITATION_DECLINED"  -> ParticipantStatus.INVITATION_DECLINED;
+            case "TERMINATED"           -> ParticipantStatus.TERMINATED;
+            default -> throw new IllegalMappingException("Failed to map to ParticipantStatus from String.");
+        };
+    }
 }
