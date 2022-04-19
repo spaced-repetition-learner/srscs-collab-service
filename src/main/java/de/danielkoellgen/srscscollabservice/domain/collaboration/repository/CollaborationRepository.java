@@ -14,6 +14,8 @@ public interface CollaborationRepository {
 
     void saveNewParticipant(@NotNull Collaboration collaboration, @NotNull Participant newParticipant);
 
+    void saveAcceptedParticipation(@NotNull Collaboration collaboration, @NotNull Participant participant);
+
     @NotNull Optional<Collaboration> findCollaborationById(@NotNull UUID collaborationId);
 
     @NotNull Optional<UUID> findCollaborationIdByDeckCorrelationId(@NotNull UUID deckCorrelationId);
