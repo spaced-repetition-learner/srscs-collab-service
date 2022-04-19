@@ -5,6 +5,7 @@ import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.Collabo
 import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.ParticipantResponseDto;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.application.CollaborationService;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
+import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.ParticipantStateException;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.CollaborationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,13 +71,35 @@ public class CollaborationController {
 //            @PathVariable("collaboration-id") UUID collaborationId) {
 //        UUID transactionId = UUID.randomUUID();
 //    }
-//
-//    @PostMapping(value = "/collaborations/{collaboration-id}/participants/{user-id}/state")
-//    public ResponseEntity<?> acceptParticipation(@PathVariable("collaboration-id") UUID collaborationId,
-//            @PathVariable("user-id") UUID userId) {
-//        UUID transactionId = UUID.randomUUID();
-//    }
-//
+
+    @PostMapping(value = "/collaborations/{collaboration-id}/participants/{user-id}/state")
+    public ResponseEntity<?> acceptParticipation(@PathVariable("collaboration-id") UUID collaborationId,
+            @PathVariable("user-id") UUID userId) {
+        UUID transactionId = UUID.randomUUID();
+        logger.trace("POST /collaborations/{}/participants/{}/state: Accept Participation.[tid={}]",
+                collaborationId, userId, transactionId
+        );
+        try {
+            collaborationService.acceptParticipation(
+                    transactionId, collaborationId, userId
+            );
+        } catch(NoSuchElementException e) {
+            logger.trace("Request failed. Entity not found. Responding 404. [tid={}, message={}]",
+                    transactionId, e.getStackTrace()
+            );
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.", e);
+        } catch (ParticipantStateException e) {
+            logger.trace("Request failed. Responding 403. [tid={}, message={}]",
+                    transactionId, e.getStackTrace()
+            );
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed.", e);
+        }
+        logger.trace("Participation accepted. Responding 201. [tid={}]",
+                transactionId
+        );
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
 //    @DeleteMapping(value = "/collaborations/{collaboration-id}/participants")
 //    public ResponseEntity<?> endParticipation(@PathVariable("collaboration-id") UUID collaborationId,
 //            @RequestParam("user-id") UUID userId) {
