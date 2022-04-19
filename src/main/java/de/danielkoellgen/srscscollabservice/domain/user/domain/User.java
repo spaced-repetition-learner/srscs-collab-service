@@ -4,6 +4,7 @@ import de.danielkoellgen.srscscollabservice.domain.domainprimitives.Username;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -16,10 +17,10 @@ public class User {
     @NotNull
     private final Username username;
 
-    @NotNull
+    @Nullable
     private Boolean isActive;
 
-    public User(@NotNull UUID userId, @NotNull Username username, @NotNull Boolean isActive) {
+    public User(@NotNull UUID userId, @NotNull Username username, @Nullable Boolean isActive) {
         this.userId = userId;
         this.username = username;
         this.isActive = isActive;

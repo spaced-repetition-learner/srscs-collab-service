@@ -45,43 +45,54 @@ public class CollaborationByUserIdMap {
     @Column("participant_deck_id")
     private UUID participantDeckId;
 
+    @Column("participant_deck_correlation_id")
+    private UUID participantDeckCorrelationId;
+
     @Column("participant_status")
     private List<ParticipantStateMap> participantStatus;
 
 
-    //TODO deckId
     public static @NotNull CollaborationByUserIdMap mapFromEntity(@NotNull UUID userId, @NotNull Collaboration collaboration,
             @NotNull Participant participant) {
         return new CollaborationByUserIdMap(
             userId,
             collaboration.getCollaborationId(),
             participant.getUserId(),
-            collaboration.getName().getName(),
+            (collaboration.getName() != null ? collaboration.getName().getName() : null),
             participant.getUser().getUsername().getUsername(),
-            null,
+            (participant.getDeck() != null ? participant.getDeck().getDeckId() : null),
+            participant.getDeckCorrelationId(),
             participant.getStatus().stream().map(ParticipantStateMap::new).toList()
         );
     }
 
     public static @NotNull Collaboration mapToEntityFromDatabase(@NotNull List<CollaborationByUserIdMap> mappedParticipants) {
         List<Participant> participants = new ArrayList<>();
-
         try {
             for (CollaborationByUserIdMap mappedParticipant : mappedParticipants) {
-                User user = new User(mappedParticipant.participantUserId, new Username(mappedParticipant.participantUsername), null);
-                Deck deck = mappedParticipant.participantDeckId != null ? new Deck(mappedParticipant.participantDeckId, user) : null;
+                User user = new User(
+                        mappedParticipant.participantUserId,
+                        new Username(mappedParticipant.participantUsername),
+                        null
+                );
+                Deck deck = mappedParticipant.participantDeckId != null ?
+                        new Deck(mappedParticipant.participantDeckId, user) :
+                        null;
                 Participant participant = new Participant(
                         user,
                         deck,
-                        null,
+                        mappedParticipant.participantDeckCorrelationId,
                         mappedParticipant.participantStatus.stream()
-                                .map(ParticipantStateMap::mapToEntityFromDatabase).toList());
+                                .map(ParticipantStateMap::mapToEntityFromDatabase)
+                                .toList()
+                );
                 participants.add(participant);
             }
             return new Collaboration(
                     mappedParticipants.get(0).collaborationId,
                     new DeckName(mappedParticipants.get(0).collaborationName),
-                    participants.stream().collect(Collectors.toMap(Participant::getUserId, participant -> participant))
+                    participants.stream()
+                            .collect(Collectors.toMap(Participant::getUserId, participant -> participant))
             );
         } catch (Exception e) {
             throw new IllegalRepositoryMappingException("Failed mapping between entity and database. " + e.getMessage());

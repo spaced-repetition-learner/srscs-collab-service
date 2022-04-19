@@ -59,6 +59,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
                         collaboration.getName().getName(),
                         innerParticipant.getUser().getUsername().getUsername(),
                         null,
+                        innerParticipant.getDeckCorrelationId(),
                         innerParticipant.getStatus().stream().map(ParticipantStateMap::new).toList()
                 ));
             }

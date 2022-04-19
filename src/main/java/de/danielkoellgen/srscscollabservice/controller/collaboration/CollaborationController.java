@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -96,15 +97,30 @@ public class CollaborationController {
                     transactionId);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Collaboration not found.", e);
         }
+        logger.trace("Collaborations retrieved. Responding 200. [tid={}, payload={}]",
+                transactionId, new CollaborationResponseDto(collaboration));
         return new ResponseEntity<>(
                 new CollaborationResponseDto(collaboration),
                 HttpStatus.OK
         );
     }
 
-//    @GetMapping(value = "/collaborations", produces = {"application/json"})
-//    public ResponseEntity<CollaborationResponseDto> fetchCollaborationByUserId(@RequestParam("user-id") UUID userId,
-//            @RequestParam("participant-status") String participantStatus) {
-//        UUID transactionId = UUID.randomUUID();
-//    }
+    @GetMapping(value = "/collaborations", produces = {"application/json"})
+    public ResponseEntity<List<CollaborationResponseDto>> fetchCollaborationByUserId(@RequestParam("user-id") UUID userId) {
+        UUID transactionId = UUID.randomUUID();
+        logger.trace("GET /collaborations?user-id={}: Fetch Collaboration by user-id. [tid={}]",
+                userId, transactionId);
+        List<CollaborationResponseDto> collaboration = collaborationRepository
+                .findCollaborationsByUserId(userId).stream()
+                .map(CollaborationResponseDto::new)
+                .toList();
+        logger.trace("{} Collaborations retrieved. Responding 200. [tid={}, payload={}]",
+                collaboration.size(),
+                transactionId,
+                collaboration
+        );
+        return new ResponseEntity<>(
+                collaboration, HttpStatus.OK
+        );
+    }
 }
