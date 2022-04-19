@@ -1,4 +1,4 @@
-package de.danielkoellgen.srscscollabservice.integrationTests.domain.user.repository;
+package de.danielkoellgen.srscscollabservice.domain.user;
 
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.Username;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
@@ -7,7 +7,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.cassandra.core.CassandraOperations;
 
 import java.util.UUID;
 

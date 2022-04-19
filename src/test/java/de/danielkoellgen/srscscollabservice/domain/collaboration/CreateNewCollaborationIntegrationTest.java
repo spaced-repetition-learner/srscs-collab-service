@@ -1,4 +1,4 @@
-package de.danielkoellgen.srscscollabservice.integrationTests.domain.collaboration;
+package de.danielkoellgen.srscscollabservice.domain.collaboration;
 
 import de.danielkoellgen.srscscollabservice.domain.collaboration.application.CollaborationService;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.*;
@@ -48,7 +48,7 @@ public class CreateNewCollaborationIntegrationTest {
     }
 
     @Test
-    public void shouldPersistNewCollaborationAndFetchById() throws Exception {
+    public void shouldAllowToCreateNewCollaborationAndFetchById() throws Exception {
         // given
         UUID transactionId = UUID.randomUUID();
         DeckName name = new DeckName("anyName");
@@ -83,5 +83,64 @@ public class CreateNewCollaborationIntegrationTest {
                 .isEqualTo(ParticipantStatus.INVITED);
         assertThat(p1State.createdAt())
                 .isBefore(LocalDateTime.now());
+    }
+
+    @Test
+    public void shouldAllowToFetchCollaborationIdByDeckCorrelationId() throws Exception {
+        // given
+        UUID transactionId = UUID.randomUUID();
+        DeckName name = new DeckName("anyName");
+        UUID collaborationId = collaborationService.startNewCollaboration(transactionId, name, List.of(user1_username, user2_username));
+
+        // when
+        Collaboration fetchedById = collaborationRepository.findCollaborationById(collaborationId).get();
+        UUID p1DeckCorrelationId = fetchedById.getParticipants().values().stream().toList().get(0).getDeckCorrelationId();
+        UUID p2DeckCorrelationId = fetchedById.getParticipants().values().stream().toList().get(0).getDeckCorrelationId();
+
+        // then
+        UUID idFetchedByCorrelationIdP1 = collaborationRepository.findCollaborationIdByDeckCorrelationId(p1DeckCorrelationId).get();
+        assertThat(idFetchedByCorrelationIdP1)
+                .isEqualTo(collaborationId);
+
+        // and then
+        UUID idFetchedByCorrelationIdP2 = collaborationRepository.findCollaborationIdByDeckCorrelationId(p2DeckCorrelationId).get();
+        assertThat(idFetchedByCorrelationIdP2)
+                .isEqualTo(collaborationId);
+    }
+
+    @Test
+    public void shouldAllowToFetchCollaborationByUserId() throws Exception {
+        // given
+        UUID transactionId = UUID.randomUUID();
+        DeckName name = new DeckName("anyName");
+        UUID collaborationId = collaborationService.startNewCollaboration(transactionId, name, List.of(user1_username, user2_username));
+
+        // when
+        List<Collaboration> collaborationsUser1 = collaborationRepository.findCollaborationsByUserId(user1_userId);
+        List<Collaboration> collaborationsUser2 = collaborationRepository.findCollaborationsByUserId(user2_userId);
+
+        // then
+        assertThat(collaborationsUser1.size())
+                .isEqualTo(collaborationsUser2.size())
+                .isEqualTo(1);
+
+        // and then
+        Collaboration cb1 = collaborationsUser1.get(0);
+        assertThat(cb1.getCollaborationId())
+                .isEqualTo(collaborationId);
+        assertThat(cb1.getName())
+                .isEqualTo(name);
+        assertThat(cb1.getParticipants().values().size())
+                .isEqualTo(2);
+
+        // and then
+        Participant p1 = cb1.getParticipants().get(user1_userId);
+        assertThat(p1.getUser().getUsername())
+                .isEqualTo(user1_username);
+        assertThrows(IllegalEntityPersistenceState.class, () -> {
+            p1.getDeck();
+        });
+
+        // and then
     }
 }
