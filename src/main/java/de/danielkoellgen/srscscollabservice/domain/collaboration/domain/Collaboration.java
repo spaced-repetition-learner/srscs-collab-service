@@ -52,10 +52,10 @@ public class Collaboration {
         return newParticipant;
     }
 
-    public Boolean acceptInvitation(@NotNull UUID transactionId, @NotNull UUID userId) throws ParticipantStateException {
+    public @NotNull Participant acceptInvitation(@NotNull UUID transactionId, @NotNull UUID userId) throws ParticipantStateException {
         Participant participant = getParticipants().get(userId);
         participant.acceptParticipation(transactionId);
-        return true;
+        return participant;
     }
 
     public void endParticipation(@NotNull UUID transactionId, @NotNull UUID userId) throws ParticipantStateException {

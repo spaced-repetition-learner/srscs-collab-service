@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Getter
 @AllArgsConstructor
@@ -40,7 +41,10 @@ public class Participant {
             throw new ParticipantStateException("Accepting a participation whose status is "+getCurrentState().status()+
                     " is not allowed.");
         }
-        status.add(new State(transactionId, ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now()));
+        status = Stream.concat(
+                status.stream(),
+                Stream.of(new State(transactionId, ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now()))
+        ).toList();
     }
 
     public void endParticipation(@NotNull UUID transactionId) throws ParticipantStateException {

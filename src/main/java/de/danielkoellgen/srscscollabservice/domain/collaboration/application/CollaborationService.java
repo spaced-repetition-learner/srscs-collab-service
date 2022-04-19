@@ -4,6 +4,7 @@ import de.danielkoellgen.srscscollabservice.controller.collaboration.Collaborati
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.CollaborationStateException;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Participant;
+import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.ParticipantStateException;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.CollaborationRepository;
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.DeckName;
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.Username;
@@ -61,13 +62,23 @@ public class CollaborationService {
         collaborationRepository.saveNewParticipant(collaboration, newParticipant);
     }
 
-    public void acceptParticipation(@NotNull UUID transactionId, @NotNull UUID collaborationId, @NotNull UUID userId)
-            throws NoSuchElementException {
-
+    public void acceptParticipation(@NotNull UUID transactionId, @NotNull UUID collaborationId, @NotNull UUID userId) throws
+            NoSuchElementException, ParticipantStateException {
+        Collaboration collaboration = collaborationRepository
+                .findCollaborationById(collaborationId).get();
+        Participant updatedParticipant = collaboration
+                .acceptInvitation(transactionId, userId);
+        collaborationRepository
+                .saveAcceptedParticipation(collaboration, updatedParticipant);
+        logger.info("'{}' accepted to participate in '{}'. [tid={}]",
+                updatedParticipant.getUser().getUsername().getUsername(),
+                collaboration.getName().getName(),
+                transactionId
+        );
+        //TODO: CMD Create Deck!
     }
 
-    public void endParticipation(@NotNull UUID transactionId, @NotNull UUID collaborationId, @NotNull UUID userId)
-            throws NoSuchElementException {
+    public void endParticipation(@NotNull UUID transactionId, @NotNull UUID collaborationId, @NotNull UUID userId) {
 
     }
 
