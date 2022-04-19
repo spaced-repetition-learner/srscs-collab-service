@@ -1,6 +1,6 @@
 package de.danielkoellgen.srscscollabservice.events.consumer;
 
-import de.danielkoellgen.srscsdeckservice.domain.domainprimitive.EventDateTime;
+import de.danielkoellgen.srscscollabservice.domain.domainprimitives.EventDateTime;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.jetbrains.annotations.NotNull;
 
