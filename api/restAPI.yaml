@@ -8,7 +8,7 @@ paths:
     post:
       summary: Invites users to start a new collaboration.
       tags:
-        - collaboration
+        - /collaborations
       requestBody:
         required: true
         content:
@@ -28,7 +28,7 @@ paths:
     get:
       summary: Retrieves all matching collaborations.
       tags:
-        - collaboration
+        - /collaborations
       parameters:
         - in: query
           name: user-id
@@ -52,7 +52,7 @@ paths:
     get:
       summary: Retrieves the collaboration.
       tags:
-        - collaboration
+        - /collaborations
       parameters:
         - $ref: "#/components/parameters/collaborationId"
       responses:
@@ -69,7 +69,7 @@ paths:
     post:
       summary: Invites a new user to the existing collaboration.
       tags:
-        - collaboration
+        - /collaborations
       parameters:
         - $ref: "#/components/parameters/collaborationId"
       requestBody:
@@ -91,7 +91,7 @@ paths:
     get:
       summary: Retrieves all participations.
       tags:
-        - collaboration
+        - /collaborations
       parameters:
         - $ref: "#/components/parameters/collaborationId"
       responses:
@@ -110,7 +110,7 @@ paths:
     post:
       summary: Accepts the invitation.
       tags:
-        - collaboration
+        - /collaborations
       requestBody:
         required: true
         content:
@@ -136,7 +136,7 @@ paths:
     delete:
       summary: Declines or ends the participation.
       tags:
-        - collaboration
+        - /collaborations
       responses:
         200:
           description: Participation disabled.
