@@ -81,13 +81,27 @@ public class CollaborationController {
 //            @RequestParam("user-id") UUID userId) {
 //        UUID transactionId = UUID.randomUUID();
 //    }
-//
-//    @GetMapping(value = "/collaborations/{collaboration-id}", produces = {"application/json"})
-//    public ResponseEntity<CollaborationResponseDto> fetchCollaborationById(
-//            @PathVariable("collaboration-id") UUID collaborationId) {
-//        UUID transactionId = UUID.randomUUID();
-//    }
-//
+
+    @GetMapping(value = "/collaborations/{collaboration-id}", produces = {"application/json"})
+    public ResponseEntity<CollaborationResponseDto> fetchCollaborationById(
+            @PathVariable("collaboration-id") UUID collaborationId) {
+        UUID transactionId = UUID.randomUUID();
+        logger.trace("GET /collaborations/{}: Fetch Collaboration by id. [tid={}]",
+                collaborationId, transactionId);
+        Collaboration collaboration;
+        try {
+            collaboration = collaborationRepository.findCollaborationById(collaborationId).get();
+        } catch (NoSuchElementException e) {
+            logger.trace("Request failed. Entity not found. Responding 404. [tid={}]",
+                    transactionId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Collaboration not found.", e);
+        }
+        return new ResponseEntity<>(
+                new CollaborationResponseDto(collaboration),
+                HttpStatus.OK
+        );
+    }
+
 //    @GetMapping(value = "/collaborations", produces = {"application/json"})
 //    public ResponseEntity<CollaborationResponseDto> fetchCollaborationByUserId(@RequestParam("user-id") UUID userId,
 //            @RequestParam("participant-status") String participantStatus) {
