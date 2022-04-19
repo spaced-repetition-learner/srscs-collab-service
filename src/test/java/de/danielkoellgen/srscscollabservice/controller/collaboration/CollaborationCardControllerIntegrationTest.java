@@ -10,6 +10,7 @@ import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.Coll
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.Username;
 import de.danielkoellgen.srscscollabservice.domain.user.application.UserService;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,5 +102,46 @@ public class CollaborationCardControllerIntegrationTest {
         // and then
         Collaboration fetchedCollaboration = collaborationRepository
                 .findCollaborationById(responseDto.collaborationId()).orElseThrow();
+    }
+
+    @Test
+    public void shouldAllowToFetchCollaborationsById() {
+        // given
+        CollaborationResponseDto startedCollaboration = externallyStartCollaboration();
+        UUID collaborationId = startedCollaboration.collaborationId();
+
+        // when
+        CollaborationResponseDto responseDto = webTestClientCollaboration.get()
+                .uri("/collaborations/"+collaborationId)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(CollaborationResponseDto.class)
+                .returnResult().getResponseBody();
+
+        // then
+        assertThat(startedCollaboration)
+                .isEqualTo(responseDto);
+    }
+
+    public @NotNull CollaborationResponseDto externallyStartCollaboration() {
+        // given
+        CollaborationRequestDto requestDto = new CollaborationRequestDto(
+                List.of(
+                        user1.getUsername().getUsername(),
+                        user2.getUsername().getUsername()
+                ),
+                "anyName"
+        );
+        CollaborationResponseDto responseDto = webTestClientCollaboration.post().uri("/collaborations")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(requestDto)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(CollaborationResponseDto.class)
+                .returnResult().getResponseBody();
+        assert responseDto != null;
+        return responseDto;
     }
 }
