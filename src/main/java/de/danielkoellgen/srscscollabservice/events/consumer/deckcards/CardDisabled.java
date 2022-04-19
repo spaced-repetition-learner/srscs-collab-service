@@ -1,21 +1,21 @@
-package de.danielkoellgen.srscscollabservice.events.consumer.deck;
+package de.danielkoellgen.srscscollabservice.events.consumer.deckcards;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.danielkoellgen.srscscollabservice.events.consumer.AbstractConsumerEvent;
-import de.danielkoellgen.srscscollabservice.events.consumer.deck.dto.DeckCreatedDto;
+import de.danielkoellgen.srscscollabservice.events.consumer.deckcards.dto.CardDisabledDto;
 import lombok.Getter;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.jetbrains.annotations.NotNull;
 
-public class DeckCreated extends AbstractConsumerEvent {
+public class CardDisabled extends AbstractConsumerEvent {
 
     @Getter
-    private final @NotNull DeckCreatedDto payload;
+    private final @NotNull CardDisabledDto payload;
 
-    public DeckCreated(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
+    public CardDisabled(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
         super(event);
-        this.payload = DeckCreatedDto.makeFromSerialization(event.value());
+        this.payload = CardDisabledDto.makeFromSerialization(event.value());
     }
 
     @Override

@@ -1,4 +1,4 @@
-package de.danielkoellgen.srscscollabservice.events.consumer.deck.dto;
+package de.danielkoellgen.srscscollabservice.events.consumer.deckcards.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
