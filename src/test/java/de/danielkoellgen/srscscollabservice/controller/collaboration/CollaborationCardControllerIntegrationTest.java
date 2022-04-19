@@ -35,6 +35,7 @@ public class CollaborationCardControllerIntegrationTest {
 
     private User user1;
     private User user2;
+    private User user3;
 
     @Autowired
     public CollaborationCardControllerIntegrationTest(CollaborationController collaborationController,
@@ -55,6 +56,11 @@ public class CollaborationCardControllerIntegrationTest {
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 new Username("melsienna")
+        );
+        user3 = userService.addExternallyCreatedUser(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                new Username("sarahve")
         );
     }
 
@@ -107,7 +113,9 @@ public class CollaborationCardControllerIntegrationTest {
     @Test
     public void shouldAllowToFetchCollaborationsById() {
         // given
-        CollaborationResponseDto startedCollaboration = externallyStartCollaboration();
+        CollaborationResponseDto startedCollaboration = externallyStartCollaboration(
+                List.of(user1, user2)
+        );
         UUID collaborationId = startedCollaboration.collaborationId();
 
         // when
@@ -127,7 +135,9 @@ public class CollaborationCardControllerIntegrationTest {
     @Test
     public void shouldAllowToFetchCollaborationsByUserId() {
         // given
-        CollaborationResponseDto startedCollaboration = externallyStartCollaboration();
+        CollaborationResponseDto startedCollaboration = externallyStartCollaboration(
+                List.of(user1, user2)
+        );
         UUID collaborationId = startedCollaboration.collaborationId();
 
         // when
@@ -146,13 +156,39 @@ public class CollaborationCardControllerIntegrationTest {
                 .isEqualTo(responseDtoById);
     }
 
-    public @NotNull CollaborationResponseDto externallyStartCollaboration() {
+    @Test
+    public void shouldAllowToAcceptInvitations() {
+        // given
+        CollaborationResponseDto startedCollaboration = externallyStartCollaboration(
+                List.of(user1, user2)
+        );
+        UUID collaborationId = startedCollaboration.collaborationId();
+        UUID acceptedUserUserId = user1.getUserId();
+
+        // when
+        webTestClientCollaboration.post()
+                .uri("/collaborations/"+collaborationId+"/participants/"+acceptedUserUserId+"/state")
+                .exchange()
+                .expectStatus().isCreated();
+
+        // then
+        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(collaborationId);
+        ParticipantResponseDto user1Dto = fetchedCollaboration.participants().stream()
+                .filter(x -> x.userId().equals(acceptedUserUserId))
+                .toList()
+                .get(0);
+        assertThat(user1Dto.participantStatus())
+                .isEqualTo(ParticipantStatus.toStringFromEnum(
+                        ParticipantStatus.INVITATION_ACCEPTED
+                ));
+    }
+
+    public @NotNull CollaborationResponseDto externallyStartCollaboration(List<User> users) {
         // given
         CollaborationRequestDto requestDto = new CollaborationRequestDto(
-                List.of(
-                        user1.getUsername().getUsername(),
-                        user2.getUsername().getUsername()
-                ),
+                users.stream()
+                        .map(x -> x.getUsername().getUsername())
+                        .toList(),
                 "anyName"
         );
         CollaborationResponseDto responseDto = webTestClientCollaboration.post().uri("/collaborations")
