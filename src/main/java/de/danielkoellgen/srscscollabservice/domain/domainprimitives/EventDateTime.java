@@ -33,4 +33,11 @@ public class EventDateTime {
     public @NotNull String getFormatted() {
         return dateTime.format(DateTimeFormatter.ofPattern(pattern_RFC3339));
     }
+
+    @Override
+    public String toString() {
+        return "EventDateTime{" +
+                "dateTime=" + getFormatted() +
+                '}';
+    }
 }
