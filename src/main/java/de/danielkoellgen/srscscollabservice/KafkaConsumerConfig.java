@@ -17,15 +17,10 @@ import java.util.Map;
 public class KafkaConsumerConfig {
 
     private final String bootstrapAddress;
-    private final String groupId;
 
     @Autowired
-    public KafkaConsumerConfig(
-            @Value("${kafka.bootstrapAddress}") String bootstrapAddress,
-            @Value("${kafka.groupId}") String groupId
-    ) {
+    public KafkaConsumerConfig(@Value("${kafka.bootstrapAddress}") String bootstrapAddress) {
         this.bootstrapAddress = bootstrapAddress;
-        this.groupId = groupId;
     }
 
 
@@ -33,7 +28,6 @@ public class KafkaConsumerConfig {
     public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(props);
