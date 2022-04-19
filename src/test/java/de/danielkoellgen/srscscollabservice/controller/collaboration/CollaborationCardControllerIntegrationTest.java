@@ -124,6 +124,28 @@ public class CollaborationCardControllerIntegrationTest {
                 .isEqualTo(responseDto);
     }
 
+    @Test
+    public void shouldAllowToFetchCollaborationsByUserId() {
+        // given
+        CollaborationResponseDto startedCollaboration = externallyStartCollaboration();
+        UUID collaborationId = startedCollaboration.collaborationId();
+
+        // when
+        List<CollaborationResponseDto> responseDtosByUserId = webTestClientCollaboration.get()
+                .uri("/collaborations?user-id="+user2.getUserId())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(CollaborationResponseDto.class)
+                .returnResult().getResponseBody();
+        CollaborationResponseDto responseDto = responseDtosByUserId.get(0);
+
+        // then
+        CollaborationResponseDto responseDtoById = fetchExternalCollaborationById(responseDto.collaborationId());
+        assertThat(responseDto)
+                .isEqualTo(responseDtoById);
+    }
+
     public @NotNull CollaborationResponseDto externallyStartCollaboration() {
         // given
         CollaborationRequestDto requestDto = new CollaborationRequestDto(
@@ -139,6 +161,18 @@ public class CollaborationCardControllerIntegrationTest {
                 .bodyValue(requestDto)
                 .exchange()
                 .expectStatus().isCreated()
+                .expectBody(CollaborationResponseDto.class)
+                .returnResult().getResponseBody();
+        assert responseDto != null;
+        return responseDto;
+    }
+
+    public @NotNull CollaborationResponseDto fetchExternalCollaborationById(@NotNull UUID collaborationId) {
+        CollaborationResponseDto responseDto = webTestClientCollaboration.get()
+                .uri("/collaborations/"+collaborationId)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
                 .expectBody(CollaborationResponseDto.class)
                 .returnResult().getResponseBody();
         assert responseDto != null;
