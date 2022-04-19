@@ -57,7 +57,6 @@ public class CollaborationByIdMap{
     List<ParticipantStateMap> participantStatus;
 
 
-    //TODO deckId
     public static @NotNull CollaborationByIdMap mapFromEntity(@NotNull Collaboration collaboration,
             @NotNull Participant participant) {
         return new CollaborationByIdMap(

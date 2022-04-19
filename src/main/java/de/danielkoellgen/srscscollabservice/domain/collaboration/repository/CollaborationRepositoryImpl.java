@@ -25,50 +25,29 @@ import static org.springframework.data.cassandra.core.query.Query.query;
 public class CollaborationRepositoryImpl implements CollaborationRepository {
 
     private final CassandraOperations cassandraTemplate;
-    private final CqlTemplate cqlTemplate;
 
     @Autowired
-    public CollaborationRepositoryImpl(CassandraOperations cassandraTemplate, CqlTemplate cqlTemplate) {
+    public CollaborationRepositoryImpl(CassandraOperations cassandraTemplate) {
         this.cassandraTemplate = cassandraTemplate;
-        this.cqlTemplate = cqlTemplate;
     }
 
     @Override
-    //TODO refactor constructor methods
     public void saveNewCollaboration(@NotNull Collaboration collaboration) {
-        List<CollaborationByIdMap> mappedByIds = new ArrayList<>();
-        List<CollaborationByUserIdMap> mappedByUserIds = new ArrayList<>();
-        List<CollaborationByDeckCorrelationIdMap> mappedByDeckCorrelationIds = new ArrayList<>();
-
-        for (Participant participant : collaboration.getParticipants().values()) {
-            mappedByIds.add(new CollaborationByIdMap(
-                    collaboration.getCollaborationId(),
-                    participant.getUser().getUserId(),
-                    collaboration.getName().getName(),
-                    participant.getUser().getUsername().getUsername(),
-                    null,
-                    participant.getDeckCorrelationId(),
-                    participant.getStatus().stream().map(ParticipantStateMap::new).toList()
-            ));
-
-            for (Participant innerParticipant: collaboration.getParticipants().values()) {
-                mappedByUserIds.add(new CollaborationByUserIdMap(
-                        participant.getUser().getUserId(),
-                        collaboration.getCollaborationId(),
-                        innerParticipant.getUser().getUserId(),
-                        collaboration.getName().getName(),
-                        innerParticipant.getUser().getUsername().getUsername(),
-                        null,
-                        innerParticipant.getDeckCorrelationId(),
-                        innerParticipant.getStatus().stream().map(ParticipantStateMap::new).toList()
-                ));
-            }
-
-            mappedByDeckCorrelationIds.add(new CollaborationByDeckCorrelationIdMap(
-                    participant.getDeckCorrelationId(),
-                    collaboration.getCollaborationId()
-            ));
-        }
+        List<CollaborationByIdMap> mappedByIds = collaboration.getParticipants().values().stream()
+                .map(participant -> CollaborationByIdMap.mapFromEntity(collaboration, participant))
+                .toList();
+        List<CollaborationByUserIdMap> mappedByUserIds = collaboration.getParticipants().values().stream()
+                .map(participantX -> collaboration.getParticipants().values().stream()
+                        .map(participantY -> CollaborationByUserIdMap.mapFromEntity(
+                                participantX.getUserId(),
+                                collaboration,
+                                participantY
+                        )).toList()
+                ).flatMap(Collection::stream)
+                .toList();
+        List<CollaborationByDeckCorrelationIdMap> mappedByDeckCorrelationIds = collaboration.getParticipants().values().stream()
+                .map(participant -> CollaborationByDeckCorrelationIdMap.mapFromEntity(collaboration, participant))
+                .toList();
         mappedByIds.forEach(cassandraTemplate::insert);
         mappedByUserIds.forEach(cassandraTemplate::insert);
         mappedByDeckCorrelationIds.forEach(cassandraTemplate::insert);
