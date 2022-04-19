@@ -1,8 +1,11 @@
 package de.danielkoellgen.srscscollabservice.domain.collaboration.repository.maps;
 
+import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
+import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Participant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
@@ -21,4 +24,13 @@ public class CollaborationByDeckCorrelationIdMap {
 
     @Column("collaboration_id")
     private UUID collaborationId;
+
+
+    public static @NotNull CollaborationByDeckCorrelationIdMap mapFromEntity(@NotNull Collaboration collaboration,
+            @NotNull Participant participant) {
+        return new CollaborationByDeckCorrelationIdMap(
+                participant.getDeckCorrelationId(),
+                collaboration.getCollaborationId()
+        );
+    }
 }

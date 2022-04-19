@@ -13,10 +13,9 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.springframework.data.cassandra.core.query.Criteria.where;
 import static org.springframework.data.cassandra.core.query.Query.query;
@@ -35,6 +34,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     }
 
     @Override
+    //TODO refactor constructor methods
     public void saveNewCollaboration(@NotNull Collaboration collaboration) {
         List<CollaborationByIdMap> mappedByIds = new ArrayList<>();
         List<CollaborationByUserIdMap> mappedByUserIds = new ArrayList<>();
@@ -75,7 +75,16 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
 
     @Override
     public void saveNewParticipant(@NotNull Collaboration collaboration, @NotNull Participant newParticipant) {
+        CollaborationByIdMap mappedById = CollaborationByIdMap.mapFromEntity(collaboration, newParticipant);
+        List<CollaborationByUserIdMap> mappedByUserIds = collaboration.getParticipants().values().stream()
+                .map(participant -> CollaborationByUserIdMap.mapFromEntity(
+                        participant.getUserId(), collaboration, newParticipant)).toList();
+        CollaborationByDeckCorrelationIdMap mappedByDeckCorrelationId = CollaborationByDeckCorrelationIdMap
+                .mapFromEntity(collaboration, newParticipant);
 
+        cassandraTemplate.insert(mappedById);
+        mappedByUserIds.forEach(cassandraTemplate::insert);
+        cassandraTemplate.insert(mappedByDeckCorrelationId);
     }
 
     @Override
@@ -110,6 +119,21 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
 
     @Override
     public @NotNull List<Collaboration> findCollaborationsByUserId(@NotNull UUID userId) {
-        return List.of();
+        List<CollaborationByUserIdMap> byUserIdMaps = cassandraTemplate.select(
+                query(where("user_id").is(userId)),
+                CollaborationByUserIdMap.class
+        );
+        Map<UUID, List<CollaborationByUserIdMap>> filteredByCollabId = new HashMap<>();
+        for (CollaborationByUserIdMap map : byUserIdMaps) {
+            List<CollaborationByUserIdMap> updatedCollabList = Stream.concat(
+                    (filteredByCollabId.containsKey(map.getCollaborationId()) ?
+                            filteredByCollabId.get(map.getCollaborationId()) :
+                            new ArrayList<CollaborationByUserIdMap>()
+                    ).stream(),
+                    Stream.of(map)
+            ).collect(Collectors.toList());
+            filteredByCollabId.put(map.getCollaborationId(), updatedCollabList);
+        }
+        return filteredByCollabId.values().stream().map(CollaborationByUserIdMap::mapToEntityFromDatabase).toList();
     }
 }

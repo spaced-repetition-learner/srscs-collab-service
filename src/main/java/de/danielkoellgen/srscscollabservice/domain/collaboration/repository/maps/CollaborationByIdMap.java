@@ -56,6 +56,21 @@ public class CollaborationByIdMap{
     @NotNull
     List<ParticipantStateMap> participantStatus;
 
+
+    //TODO deckId
+    public static @NotNull CollaborationByIdMap mapFromEntity(@NotNull Collaboration collaboration,
+            @NotNull Participant participant) {
+        return new CollaborationByIdMap(
+                collaboration.getCollaborationId(),
+                participant.getUserId(),
+                collaboration.getName().getName(),
+                participant.getUser().getUsername().getUsername(),
+                null,
+                participant.getDeckCorrelationId(),
+                participant.getStatus().stream().map(ParticipantStateMap::new).toList()
+        );
+    }
+
     public static @NotNull Collaboration mapToEntityFromDatabase(@NotNull List<CollaborationByIdMap> mappedParticipants) {
         List<Participant> participants = new ArrayList<>();
 

@@ -3,8 +3,6 @@ package de.danielkoellgen.srscscollabservice.domain.collaborationcard.repository
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.CardVersion;
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.CollaborationCard;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.Column;
@@ -15,8 +13,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Table(value = "collaborationcard_by_cardid")
-@NoArgsConstructor
-@AllArgsConstructor
 public record CollaborationCardByCardIdMap(
 
         @PrimaryKeyColumn(name = "correlation_card_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)

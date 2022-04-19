@@ -12,6 +12,6 @@ public record Correlation (
         Card card,
 
         @NotNull
-        UUID transactionId
+        UUID transactionId // TODO replace with correlationId. The id should be totally independent.
 ) {
 }

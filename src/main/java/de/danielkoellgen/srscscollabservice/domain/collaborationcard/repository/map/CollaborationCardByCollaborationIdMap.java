@@ -5,9 +5,6 @@ import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collabor
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.CardVersion;
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.CollaborationCard;
 import de.danielkoellgen.srscscollabservice.domain.core.IllegalRepositoryMappingException;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.Column;
@@ -20,9 +17,6 @@ import java.util.Map;
 import java.util.UUID;
 
 @Table(value = "collaborationcard_by_collaborationid")
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public record CollaborationCardByCollaborationIdMap(
 
         @PrimaryKeyColumn(name = "collaboration_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
