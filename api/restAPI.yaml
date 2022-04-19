@@ -34,10 +34,6 @@ paths:
           name: user-id
           schema:
             $ref: "#/components/schemas/uuid"
-        - in: query
-          name: participant-status
-          schema:
-            $ref: "#/components/schemas/participantStatus"
       responses:
         200:
           description: Retrieves all matching collaborations.
