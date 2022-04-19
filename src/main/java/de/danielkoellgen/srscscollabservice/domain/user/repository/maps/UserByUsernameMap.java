@@ -12,7 +12,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 
 import java.util.UUID;
 
-@Table(value = "users_by_username")
+@Table(value = "user_by_username")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
