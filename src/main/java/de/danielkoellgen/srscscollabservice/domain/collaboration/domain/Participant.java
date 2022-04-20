@@ -23,15 +23,15 @@ public class Participant {
     @Nullable
     private Deck deck;
 
-    @NotNull
-    private final UUID deckCorrelationId;
+    @Nullable
+    private UUID deckCorrelationId;
 
     @NotNull
     private List<State> status;
 
 
     public static @NotNull Participant createNewParticipant(@NotNull UUID transactionId, @NotNull User user) {
-        return new Participant(user, null, UUID.randomUUID(), new ArrayList<>(List.of(
+        return new Participant(user, null, null, new ArrayList<>(List.of(
                 new State(transactionId, ParticipantStatus.INVITED, LocalDateTime.now())
         )));
     }
@@ -44,6 +44,7 @@ public class Participant {
         status = Stream.concat(status.stream(), Stream.of(
                 new State(transactionId, ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now())
         )).toList();
+        deckCorrelationId = transactionId;
     }
 
     public void endParticipation(@NotNull UUID transactionId) throws ParticipantStateException {

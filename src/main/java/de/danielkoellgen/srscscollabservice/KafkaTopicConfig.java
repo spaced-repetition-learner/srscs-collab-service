@@ -29,4 +29,9 @@ public class KafkaTopicConfig {
         configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         return new KafkaAdmin(configs);
     }
+
+    @Bean
+    public NewTopic pub_cdm_decksCards_0(){
+        return new NewTopic("cmd.decks-cards.0", 1, (short) 1);
+    }
 }

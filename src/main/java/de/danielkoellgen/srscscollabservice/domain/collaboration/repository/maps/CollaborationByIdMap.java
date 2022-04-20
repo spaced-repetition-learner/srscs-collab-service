@@ -49,7 +49,7 @@ public class CollaborationByIdMap{
     private UUID participantDeckId;
 
     @Column("participant_deck_correlation_id")
-    @NotNull
+    @Nullable
     private UUID participantDeckCorrelationId;
 
     @Column("participant_status")
@@ -65,7 +65,7 @@ public class CollaborationByIdMap{
                 collaboration.getName().getName(),
                 participant.getUser().getUsername().getUsername(),
                 null,
-                participant.getDeckCorrelationId(),
+                (participant.getDeckCorrelationId() != null ? participant.getDeckCorrelationId() : null),
                 participant.getStatus().stream().map(ParticipantStateMap::new).toList()
         );
     }

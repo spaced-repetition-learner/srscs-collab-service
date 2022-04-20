@@ -1,5 +1,7 @@
 package de.danielkoellgen.srscscollabservice.domain.collaboration.application;
 
+import de.danielkoellgen.srscscollabservice.commands.producer.deckcards.CreateDeck;
+import de.danielkoellgen.srscscollabservice.commands.producer.deckcards.dto.CreateDeckDto;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.CollaborationStateException;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Participant;
@@ -9,6 +11,7 @@ import de.danielkoellgen.srscscollabservice.domain.domainprimitives.DeckName;
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.Username;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
 import de.danielkoellgen.srscscollabservice.domain.user.repository.UserRepository;
+import de.danielkoellgen.srscscollabservice.events.producer.KafkaProducer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +28,16 @@ public class CollaborationService {
     private final CollaborationRepository collaborationRepository;
     private final UserRepository userRepository;
 
+    private final KafkaProducer kafkaProducer;
+
     private final Logger logger = LoggerFactory.getLogger(CollaborationService.class);
 
     @Autowired
-    public CollaborationService(CollaborationRepository collaborationRepository, UserRepository userRepository) {
+    public CollaborationService(CollaborationRepository collaborationRepository, UserRepository userRepository,
+            KafkaProducer kafkaProducer) {
         this.collaborationRepository = collaborationRepository;
         this.userRepository = userRepository;
+        this.kafkaProducer = kafkaProducer;
     }
 
     public Collaboration startNewCollaboration(@NotNull UUID transactionId, @NotNull DeckName collaborationName,
@@ -85,7 +92,10 @@ public class CollaborationService {
                 collaboration.getName().getName(),
                 transactionId
         );
-        //TODO: CMD Create Deck!
+        // transactionId == deck_correlation_id !!
+        kafkaProducer.send(new CreateDeck(
+                transactionId, new CreateDeckDto(userId, collaboration.getName().getName()))
+        );
     }
 
     public void endParticipation(@NotNull UUID transactionId, @NotNull UUID collaborationId, @NotNull UUID userId) throws

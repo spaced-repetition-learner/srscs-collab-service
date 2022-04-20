@@ -49,10 +49,10 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
                 .toList();
         mappedByUserIds.forEach(cassandraTemplate::insert);
 
-        List<CollaborationByDeckCorrelationIdMap> mappedByDeckCorrelationIds = collaboration.getParticipants().values().stream()
-                .map(participant -> CollaborationByDeckCorrelationIdMap.mapFromEntity(collaboration, participant))
-                .toList();
-        mappedByDeckCorrelationIds.forEach(cassandraTemplate::insert);
+//        List<CollaborationByDeckCorrelationIdMap> mappedByDeckCorrelationIds = collaboration.getParticipants().values().stream()
+//                .map(participant -> CollaborationByDeckCorrelationIdMap.mapFromEntity(collaboration, participant))
+//                .toList();
+//        mappedByDeckCorrelationIds.forEach(cassandraTemplate::insert);
     }
 
     @Override
@@ -64,10 +64,6 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
                         .mapFromEntity(newParticipant.getUserId(), collaboration, x))
                 .toList();
         mappedByUserIds.forEach(cassandraTemplate::insert);
-
-        CollaborationByDeckCorrelationIdMap mappedByDeckCorrelationId = CollaborationByDeckCorrelationIdMap
-                .mapFromEntity(collaboration, newParticipant);
-        cassandraTemplate.insert(mappedByDeckCorrelationId);
     }
 
     @Override
@@ -76,13 +72,19 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
                 .mapFromEntity(collaboration, participant);
         cassandraTemplate.insert(mappedById);
 
-        //TODO: byDeckId: update status of Participant FOR EVERY DECK
-
         List<CollaborationByUserIdMap> mappedByUserIds = collaboration.getParticipants().values().stream()
                 .map(x -> CollaborationByUserIdMap
                         .mapFromEntity(x.getUserId(), collaboration, participant)
                 ).toList();
         mappedByUserIds.forEach(cassandraTemplate::insert);
+
+        //TODO: byDeckId: update status of Participant FOR EVERY DECK
+
+        if (participant.getDeckCorrelationId() != null) {
+            CollaborationByDeckCorrelationIdMap mappedByDeckCorrelationId = CollaborationByDeckCorrelationIdMap
+                    .mapFromEntity(collaboration, participant);
+            cassandraTemplate.insert(mappedByDeckCorrelationId);
+        }
     }
 
     @Override
