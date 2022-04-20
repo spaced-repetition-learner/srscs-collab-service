@@ -2,6 +2,7 @@ package de.danielkoellgen.srscscollabservice.controller.collaboration;
 
 import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.CollaborationRequestDto;
 import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.CollaborationResponseDto;
+import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.ParticipantRequestDto;
 import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.ParticipantResponseDto;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Participant;
@@ -236,6 +237,39 @@ public class CollaborationCardControllerIntegrationTest {
         assertThat(user1Dto.participantStatus())
                 .isEqualTo(ParticipantStatus.toStringFromEnum(
                         ParticipantStatus.TERMINATED
+                ));
+    }
+
+    @Test
+    public void shouldAllowToInviteUsersToParticipate() {
+        // given
+        CollaborationResponseDto startedCollaboration = externallyStartCollaboration(
+                List.of(user1, user2));
+        UUID collaborationId = startedCollaboration.collaborationId();
+        ParticipantRequestDto requestDto = new ParticipantRequestDto(user3.getUsername().getUsername());
+
+        // when
+        ParticipantResponseDto responseDto = webTestClientCollaboration.post()
+                .uri("/collaborations/"+collaborationId+"/participants")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(requestDto)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(ParticipantResponseDto.class)
+                .returnResult().getResponseBody();
+
+        // then
+        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(collaborationId);
+        assertThat(fetchedCollaboration.participants())
+                .hasSize(3);
+        ParticipantResponseDto invitedUserDto = fetchedCollaboration.participants().stream()
+                .filter(x -> x.userId().equals(user3.getUserId()))
+                .toList()
+                .get(0);
+        assertThat(invitedUserDto.participantStatus())
+                .isEqualTo(ParticipantStatus.toStringFromEnum(
+                        ParticipantStatus.INVITED
                 ));
     }
 
