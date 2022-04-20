@@ -2,7 +2,6 @@ package de.danielkoellgen.srscscollabservice.controller.collaboration;
 
 import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.CollaborationRequestDto;
 import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.CollaborationResponseDto;
-import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.ParticipantResponseDto;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.application.CollaborationService;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.ParticipantStateException;
@@ -83,7 +82,7 @@ public class CollaborationController {
             collaborationService.acceptParticipation(
                     transactionId, collaborationId, userId
             );
-        } catch(NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             logger.trace("Request failed. Entity not found. Responding 404. [tid={}, message={}]",
                     transactionId, e.getStackTrace()
             );
@@ -100,11 +99,29 @@ public class CollaborationController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-//    @DeleteMapping(value = "/collaborations/{collaboration-id}/participants")
-//    public ResponseEntity<?> endParticipation(@PathVariable("collaboration-id") UUID collaborationId,
-//            @RequestParam("user-id") UUID userId) {
-//        UUID transactionId = UUID.randomUUID();
-//    }
+    @DeleteMapping(value = "/collaborations/{collaboration-id}/participants/{user-id}")
+    public ResponseEntity<?> endParticipation(@PathVariable("collaboration-id") UUID collaborationId,
+            @PathVariable("user-id") UUID userId) {
+        UUID transactionId = UUID.randomUUID();
+        logger.trace("DELETE /collaborations/{}/participants/{}: End Participation. [tid={}]",
+                collaborationId, userId, transactionId);
+        try {
+            collaborationService.endParticipation(
+                    transactionId, collaborationId, userId
+            );
+        } catch (NoSuchElementException e) {
+            logger.trace("Request failed. Entity not found. Responding 404. [tid={}, message={}]",
+                    transactionId, e.getStackTrace());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.", e);
+        } catch (ParticipantStateException e) {
+            logger.trace("Request failed. Responding 403. [tid={}, message={}]",
+                    transactionId, e.getStackTrace());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed.", e);
+        }
+        logger.trace("Participation ended. Responding 200. [tid={}]",
+                transactionId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     @GetMapping(value = "/collaborations/{collaboration-id}", produces = {"application/json"})
     public ResponseEntity<CollaborationResponseDto> fetchCollaborationById(

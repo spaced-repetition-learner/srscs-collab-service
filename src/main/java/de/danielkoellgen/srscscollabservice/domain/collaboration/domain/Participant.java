@@ -41,19 +41,22 @@ public class Participant {
             throw new ParticipantStateException("Accepting a participation whose status is "+getCurrentState().status()+
                     " is not allowed.");
         }
-        status = Stream.concat(
-                status.stream(),
-                Stream.of(new State(transactionId, ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now()))
-        ).toList();
+        status = Stream.concat(status.stream(), Stream.of(
+                new State(transactionId, ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now())
+        )).toList();
     }
 
     public void endParticipation(@NotNull UUID transactionId) throws ParticipantStateException {
         if (getCurrentState().status() == ParticipantStatus.INVITED) {
-            status.add(new State(transactionId, ParticipantStatus.INVITATION_DECLINED, LocalDateTime.now()));
+            status = Stream.concat(status.stream(), Stream.of(
+                    new State(transactionId, ParticipantStatus.INVITATION_DECLINED, LocalDateTime.now())
+            )).toList();
             return;
         }
         if (getCurrentState().status() == ParticipantStatus.INVITATION_ACCEPTED) {
-            status.add(new State(transactionId, ParticipantStatus.TERMINATED, LocalDateTime.now()));
+            status = Stream.concat(status.stream(), Stream.of(
+                    new State(transactionId, ParticipantStatus.TERMINATED, LocalDateTime.now())
+            )).toList();
             return;
         }
         throw new ParticipantStateException("Ending a participation whose status is "+getCurrentState().status()+

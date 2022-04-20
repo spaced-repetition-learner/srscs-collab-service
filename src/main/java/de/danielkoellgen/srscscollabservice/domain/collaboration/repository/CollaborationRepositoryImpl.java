@@ -75,7 +75,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     }
 
     @Override
-    public void saveAcceptedParticipation(@NotNull Collaboration collaboration, @NotNull Participant participant) {
+    public void updateParticipant(@NotNull Collaboration collaboration, @NotNull Participant participant) {
         CollaborationByIdMap mappedById = CollaborationByIdMap
                 .mapFromEntity(collaboration, participant);
         cassandraTemplate.insert(mappedById);

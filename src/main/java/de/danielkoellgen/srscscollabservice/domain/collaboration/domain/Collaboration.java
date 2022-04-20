@@ -52,14 +52,18 @@ public class Collaboration {
         return newParticipant;
     }
 
-    public @NotNull Participant acceptInvitation(@NotNull UUID transactionId, @NotNull UUID userId) throws ParticipantStateException {
+    public @NotNull Participant acceptInvitation(@NotNull UUID transactionId, @NotNull UUID userId) throws
+            ParticipantStateException {
         Participant participant = getParticipants().get(userId);
         participant.acceptParticipation(transactionId);
         return participant;
     }
 
-    public void endParticipation(@NotNull UUID transactionId, @NotNull UUID userId) throws ParticipantStateException {
-        getParticipants().get(userId).endParticipation(transactionId);
+    public @NotNull Participant endParticipation(@NotNull UUID transactionId, @NotNull UUID userId) throws
+            ParticipantStateException {
+        Participant participant = getParticipants().get(userId);
+        participant.endParticipation(transactionId);
+        return participant;
     }
 
     public void setDeck(@NotNull UUID userId, @NotNull UUID deckCorrelationId, @NotNull Deck deck) {

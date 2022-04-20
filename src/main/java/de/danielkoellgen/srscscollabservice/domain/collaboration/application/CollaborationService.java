@@ -1,6 +1,5 @@
 package de.danielkoellgen.srscscollabservice.domain.collaboration.application;
 
-import de.danielkoellgen.srscscollabservice.controller.collaboration.CollaborationController;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.CollaborationStateException;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Participant;
@@ -64,12 +63,9 @@ public class CollaborationService {
 
     public void acceptParticipation(@NotNull UUID transactionId, @NotNull UUID collaborationId, @NotNull UUID userId) throws
             NoSuchElementException, ParticipantStateException {
-        Collaboration collaboration = collaborationRepository
-                .findCollaborationById(collaborationId).get();
-        Participant updatedParticipant = collaboration
-                .acceptInvitation(transactionId, userId);
-        collaborationRepository
-                .saveAcceptedParticipation(collaboration, updatedParticipant);
+        Collaboration collaboration = collaborationRepository.findCollaborationById(collaborationId).get();
+        Participant updatedParticipant = collaboration.acceptInvitation(transactionId, userId);
+        collaborationRepository.updateParticipant(collaboration, updatedParticipant);
         logger.info("'{}' accepted to participate in '{}'. [tid={}]",
                 updatedParticipant.getUser().getUsername().getUsername(),
                 collaboration.getName().getName(),
@@ -78,8 +74,20 @@ public class CollaborationService {
         //TODO: CMD Create Deck!
     }
 
-    public void endParticipation(@NotNull UUID transactionId, @NotNull UUID collaborationId, @NotNull UUID userId) {
-
+    public void endParticipation(@NotNull UUID transactionId, @NotNull UUID collaborationId, @NotNull UUID userId) throws
+            NoSuchElementException, ParticipantStateException {
+        Collaboration collaboration = collaborationRepository
+                .findCollaborationById(collaborationId).get();
+        Participant updatedParticipant = collaboration
+                .endParticipation(transactionId, userId);
+        collaborationRepository
+                .updateParticipant(collaboration, updatedParticipant);
+        logger.info("'{}' ended his participation in '{}'. [tid={}]",
+                updatedParticipant.getUser().getUsername().getUsername(),
+                collaboration.getName().getName(),
+                transactionId
+        );
+        //TODO: CMD?
     }
 
     public void addCorrespondingDeckToParticipant(@NotNull UUID transactionId) {
