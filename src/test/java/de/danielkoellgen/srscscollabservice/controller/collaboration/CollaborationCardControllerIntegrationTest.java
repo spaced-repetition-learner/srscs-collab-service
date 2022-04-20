@@ -209,6 +209,36 @@ public class CollaborationCardControllerIntegrationTest {
                 ));
     }
 
+    @Test
+    public void shouldAllowToEndAcceptedInvitations() {
+        // given
+        CollaborationResponseDto startedCollaboration = externallyStartCollaboration(
+                List.of(user1, user2));
+        UUID collaborationId = startedCollaboration.collaborationId();
+        UUID acceptedUserUserId = user1.getUserId();
+        webTestClientCollaboration.post()
+                .uri("/collaborations/"+collaborationId+"/participants/"+acceptedUserUserId+"/state")
+                .exchange()
+                .expectStatus().isCreated();
+
+        // when
+        webTestClientCollaboration.delete()
+                .uri("/collaborations/"+collaborationId+"/participants/"+acceptedUserUserId+"")
+                .exchange()
+                .expectStatus().isOk();
+
+        // then
+        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(collaborationId);
+        ParticipantResponseDto user1Dto = fetchedCollaboration.participants().stream()
+                .filter(x -> x.userId().equals(acceptedUserUserId))
+                .toList()
+                .get(0);
+        assertThat(user1Dto.participantStatus())
+                .isEqualTo(ParticipantStatus.toStringFromEnum(
+                        ParticipantStatus.TERMINATED
+                ));
+    }
+
     public @NotNull CollaborationResponseDto externallyStartCollaboration(List<User> users) {
         // given
         CollaborationRequestDto requestDto = new CollaborationRequestDto(
