@@ -183,6 +183,32 @@ public class CollaborationCardControllerIntegrationTest {
                 ));
     }
 
+    @Test
+    public void shouldAllowToDeclineInvitations() {
+        // given
+        CollaborationResponseDto startedCollaboration = externallyStartCollaboration(
+                List.of(user1, user2));
+        UUID collaborationId = startedCollaboration.collaborationId();
+        UUID declinedUserId = user1.getUserId();
+
+        // when
+        webTestClientCollaboration.delete()
+                .uri("/collaborations/"+collaborationId+"/participants/"+declinedUserId+"")
+                .exchange()
+                .expectStatus().isOk();
+
+        // then
+        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(collaborationId);
+        ParticipantResponseDto user1Dto = fetchedCollaboration.participants().stream()
+                .filter(x -> x.userId().equals(declinedUserId))
+                .toList()
+                .get(0);
+        assertThat(user1Dto.participantStatus())
+                .isEqualTo(ParticipantStatus.toStringFromEnum(
+                        ParticipantStatus.INVITATION_DECLINED
+                ));
+    }
+
     public @NotNull CollaborationResponseDto externallyStartCollaboration(List<User> users) {
         // given
         CollaborationRequestDto requestDto = new CollaborationRequestDto(
