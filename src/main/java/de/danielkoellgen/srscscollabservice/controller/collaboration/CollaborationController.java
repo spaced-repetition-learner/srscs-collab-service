@@ -2,8 +2,12 @@ package de.danielkoellgen.srscscollabservice.controller.collaboration;
 
 import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.CollaborationRequestDto;
 import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.CollaborationResponseDto;
+import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.ParticipantRequestDto;
+import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.ParticipantResponseDto;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.application.CollaborationService;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
+import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.CollaborationStateException;
+import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Participant;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.ParticipantStateException;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.CollaborationRepository;
 import org.slf4j.Logger;
@@ -64,12 +68,30 @@ public class CollaborationController {
         return new ResponseEntity<>(new CollaborationResponseDto(startedCollaboration), HttpStatus.CREATED);
     }
 
-//    @PostMapping(value = "/collaborations/{collaboration-id}/participants", consumes = {"application/json"},
-//            produces = {"application/json"})
-//    public ResponseEntity<ParticipantResponseDto> inviteUserToCollaboration(
-//            @PathVariable("collaboration-id") UUID collaborationId) {
-//        UUID transactionId = UUID.randomUUID();
-//    }
+    @PostMapping(value = "/collaborations/{collaboration-id}/participants", consumes = {"application/json"},
+            produces = {"application/json"})
+    public ResponseEntity<ParticipantResponseDto> inviteUserToCollaboration(
+            @PathVariable("collaboration-id") UUID collaborationId, @RequestBody ParticipantRequestDto requestDto) {
+        UUID transactionId = UUID.randomUUID();
+        logger.trace("POST /collaborations/{}/participants: Invite User to participate. [tid={}, payload={}]",
+                collaborationId, transactionId, requestDto);
+        Participant newParticipant;
+        try {
+            newParticipant = collaborationService.inviteUserToCollaboration(
+                    transactionId, collaborationId, requestDto.getMappedUsername());
+        } catch (NoSuchElementException e) {
+            logger.trace("Request failed. Entity not found. Responding 404. [tid={}]",
+                    transactionId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.",e);
+        } catch (CollaborationStateException e) {
+            logger.trace("Request failed. Responding 403. [tid={}, message={}]",
+                    transactionId, e.getStackTrace());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed.", e);
+        }
+        logger.trace("User invited to participate. Responding 201. [tid={}]",
+                transactionId);
+        return new ResponseEntity<>(new ParticipantResponseDto(newParticipant), HttpStatus.CREATED);
+    }
 
     @PostMapping(value = "/collaborations/{collaboration-id}/participants/{user-id}/state")
     public ResponseEntity<?> acceptParticipation(@PathVariable("collaboration-id") UUID collaborationId,

@@ -52,13 +52,27 @@ public class CollaborationService {
         return collaboration;
     }
 
-    public void inviteUserToCollaboration(@NotNull UUID transactionId, @NotNull UUID collaborationId,
+    public Participant inviteUserToCollaboration(@NotNull UUID transactionId, @NotNull UUID collaborationId,
             @NotNull Username username) throws NoSuchElementException, CollaborationStateException {
-        User user = userRepository.findUserByUsername(username).get();
-
-        Collaboration collaboration = collaborationRepository.findCollaborationById(collaborationId).get();
-        Participant newParticipant = collaboration.inviteParticipant(transactionId, user);
-        collaborationRepository.saveNewParticipant(collaboration, newParticipant);
+        User user = userRepository
+                .findUserByUsername(username).get();
+        Collaboration collaboration = collaborationRepository
+                .findCollaborationById(collaborationId).get();
+        Participant newParticipant = collaboration
+                .inviteParticipant(transactionId, user);
+        collaborationRepository
+                .saveNewParticipant(collaboration, newParticipant);
+        logger.info("Invited '{}' to participate in '{}'. [tid={}]",
+                user.getUsername().getUsername(),
+                collaboration.getName().getName(),
+                transactionId
+        );
+        logger.trace("'{}' invited to collaborate: [tid={}, {}]",
+                user.getUsername().getUsername(),
+                transactionId,
+                collaboration
+        );
+        return newParticipant;
     }
 
     public void acceptParticipation(@NotNull UUID transactionId, @NotNull UUID collaborationId, @NotNull UUID userId) throws

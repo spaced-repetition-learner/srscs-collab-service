@@ -57,17 +57,13 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
 
     @Override
     public void saveNewParticipant(@NotNull Collaboration collaboration, @NotNull Participant newParticipant) {
-        CollaborationByIdMap mappedById = CollaborationByIdMap
-                .mapFromEntity(collaboration, newParticipant);
-        cassandraTemplate.insert(mappedById);
+        updateParticipant(collaboration, newParticipant);
 
         List<CollaborationByUserIdMap> mappedByUserIds = collaboration.getParticipants().values().stream()
-                .map(participant -> CollaborationByUserIdMap.mapFromEntity(
-                        participant.getUserId(), collaboration, newParticipant)
-                ).toList();
+                .map(x -> CollaborationByUserIdMap
+                        .mapFromEntity(newParticipant.getUserId(), collaboration, x))
+                .toList();
         mappedByUserIds.forEach(cassandraTemplate::insert);
-
-        //TODO: Collaboration_by_deckId!!
 
         CollaborationByDeckCorrelationIdMap mappedByDeckCorrelationId = CollaborationByDeckCorrelationIdMap
                 .mapFromEntity(collaboration, newParticipant);
