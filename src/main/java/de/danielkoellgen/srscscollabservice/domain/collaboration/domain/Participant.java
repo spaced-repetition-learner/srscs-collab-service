@@ -68,14 +68,19 @@ public class Participant {
         if (deckCorrelationId != this.deckCorrelationId) {
             throw new IllegalArgumentException("Deck does not match transaction-id");
         }
-        if (deck.getUser().getUserId() != this.user.getUserId()) {
-            throw new IllegalArgumentException("Deck does not match user.");
-        }
         this.deck = deck;
     }
 
     public @NotNull State getCurrentState() {
         return status.stream().max((x, y) -> x.createdAt().compareTo(y.createdAt())).get();
+    }
+
+    public @NotNull ParticipantStatus getCurrentParticipantStatus() {
+        return getCurrentState().status();
+    }
+
+    public @NotNull Boolean isActive() {
+        return getCurrentParticipantStatus().equals(ParticipantStatus.INVITATION_ACCEPTED);
     }
 
     public @NotNull UUID getUserId() {
