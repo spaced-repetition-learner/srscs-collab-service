@@ -2,10 +2,7 @@ package de.danielkoellgen.srscscollabservice.domain.collaboration.repository;
 
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Participant;
-import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.maps.CollaborationByDeckCorrelationIdMap;
-import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.maps.CollaborationByIdMap;
-import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.maps.CollaborationByUserIdMap;
-import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.maps.ParticipantStateMap;
+import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.maps.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -48,11 +45,6 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
                 ).flatMap(Collection::stream)
                 .toList();
         mappedByUserIds.forEach(cassandraTemplate::insert);
-
-//        List<CollaborationByDeckCorrelationIdMap> mappedByDeckCorrelationIds = collaboration.getParticipants().values().stream()
-//                .map(participant -> CollaborationByDeckCorrelationIdMap.mapFromEntity(collaboration, participant))
-//                .toList();
-//        mappedByDeckCorrelationIds.forEach(cassandraTemplate::insert);
     }
 
     @Override
@@ -64,6 +56,13 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
                         .mapFromEntity(newParticipant.getUserId(), collaboration, x))
                 .toList();
         mappedByUserIds.forEach(cassandraTemplate::insert);
+
+        List<CollaborationByDeckIdMap> mappedByDeckIds = collaboration.getParticipants().values().stream()
+                .filter(x -> x.getDeck() != null)
+                .map(x -> CollaborationByDeckIdMap.mapFromEntity(x.getDeck().getDeckId(), collaboration))
+                .flatMap(Collection::stream)
+                .toList();
+        mappedByDeckIds.forEach(cassandraTemplate::insert);
     }
 
     @Override
@@ -78,7 +77,11 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
                 ).toList();
         mappedByUserIds.forEach(cassandraTemplate::insert);
 
-        //TODO: byDeckId: update status of Participant FOR EVERY DECK
+        List<CollaborationByDeckIdMap> mappedByDeckId = collaboration.getParticipants().values().stream()
+                .filter(x -> x.getDeck() != null)
+                .map(x -> CollaborationByDeckIdMap.mapFromEntity(x.getDeck().getDeckId(), collaboration, participant))
+                .toList();
+        mappedByUserIds.forEach(cassandraTemplate::insert);
 
         if (participant.getDeckCorrelationId() != null) {
             CollaborationByDeckCorrelationIdMap mappedByDeckCorrelationId = CollaborationByDeckCorrelationIdMap
@@ -135,5 +138,16 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
             filteredByCollabId.put(map.getCollaborationId(), updatedCollabList);
         }
         return filteredByCollabId.values().stream().map(CollaborationByUserIdMap::mapToEntityFromDatabase).toList();
+    }
+
+    @Override
+    public @NotNull Optional<Collaboration> findCollaborationByDeckId(@NotNull UUID deckId) {
+        List<CollaborationByDeckIdMap> selectByDeckId = cassandraTemplate.select(
+                query(where("deck_id").is(deckId)), CollaborationByDeckIdMap.class
+        );
+        if (selectByDeckId.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(CollaborationByDeckIdMap.mapToEntityFromDatabase(selectByDeckId));
     }
 }

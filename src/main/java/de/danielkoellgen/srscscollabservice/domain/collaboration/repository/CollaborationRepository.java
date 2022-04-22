@@ -23,4 +23,6 @@ public interface CollaborationRepository {
     @NotNull Optional<Collaboration> findCollaborationByDeckCorrelationId(@NotNull UUID deckCorrelationId);
 
     @NotNull List<Collaboration> findCollaborationsByUserId(@NotNull UUID userId);
+
+    @NotNull Optional<Collaboration> findCollaborationByDeckId(@NotNull UUID deckId);
 }

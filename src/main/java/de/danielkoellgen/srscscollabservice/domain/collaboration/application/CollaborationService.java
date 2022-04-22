@@ -7,6 +7,7 @@ import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collabor
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Participant;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.ParticipantStateException;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.CollaborationRepository;
+import de.danielkoellgen.srscscollabservice.domain.deck.domain.Deck;
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.DeckName;
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.Username;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -114,7 +116,17 @@ public class CollaborationService {
         //TODO: CMD?
     }
 
-    public void addCorrespondingDeckToParticipant(@NotNull UUID transactionId) {
-        //TODO populate with existing cards
+    public void addCorrespondingDeckToParticipant(@NotNull UUID transactionId, @NotNull UUID correlationId,
+            @NotNull UUID deckId, @NotNull UUID userId) {
+        Optional<Collaboration> optCcollaboration = collaborationRepository.findCollaborationByDeckCorrelationId(correlationId);
+        if (optCcollaboration.isPresent()){
+            Collaboration collaboration = optCcollaboration.get();
+            Participant updatedParticipant = collaboration.setDeck(
+                    userId, correlationId, new Deck(deckId, null)
+            );
+            collaborationRepository.updateParticipant(
+                    collaboration, updatedParticipant
+            );
+        }
     }
 }

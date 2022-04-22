@@ -66,8 +66,10 @@ public class Collaboration {
         return participant;
     }
 
-    public void setDeck(@NotNull UUID userId, @NotNull UUID deckCorrelationId, @NotNull Deck deck) {
-        getParticipants().get(userId).setDeck(deckCorrelationId, deck);
+    public @NotNull Participant setDeck(@NotNull UUID userId, @NotNull UUID deckCorrelationId, @NotNull Deck deck) {
+        Participant participant = getParticipants().get(userId);
+        participant.setDeck(deckCorrelationId, deck);
+        return participant;
     }
 
     public CollaborationStatus getCollaborationStatus() {
