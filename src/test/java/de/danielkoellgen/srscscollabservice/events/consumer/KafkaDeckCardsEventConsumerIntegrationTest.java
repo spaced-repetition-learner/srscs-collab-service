@@ -72,7 +72,6 @@ public class KafkaDeckCardsEventConsumerIntegrationTest {
         );
 
         // when
-        //TODO
 
         // then
     }

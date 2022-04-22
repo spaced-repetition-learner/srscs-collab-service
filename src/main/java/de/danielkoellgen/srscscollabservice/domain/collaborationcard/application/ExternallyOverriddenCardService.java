@@ -72,7 +72,7 @@ public class ExternallyOverriddenCardService {
                             new OverrideCard(transactionId, x.correlationId(), new OverrideCardDto(
                                     x.deckId(),
                                     x.parentCardId(),
-                                    x.rootCardId())) //TODO
+                                    x.rootCardId()))
                     ));
         }
 

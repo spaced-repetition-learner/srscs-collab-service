@@ -112,7 +112,6 @@ public class CollaborationService {
                 collaboration.getName().getName(),
                 transactionId
         );
-        //TODO: CMD?
     }
 
     public void addCorrespondingDeckToParticipant(@NotNull UUID transactionId, @NotNull UUID correlationId,
