@@ -1,5 +1,7 @@
 package de.danielkoellgen.srscscollabservice.domain.collaborationcard.application;
 
+import de.danielkoellgen.srscscollabservice.commands.producer.deckcards.CloneCard;
+import de.danielkoellgen.srscscollabservice.commands.producer.deckcards.dto.CloneCardDto;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.CollaborationRepository;
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.CollaborationCard;
@@ -53,7 +55,10 @@ public class ExternallyCreatedCardService {
             collaborationCardRepository.saveNewCollaborationCard(
                     newCollaborationCard
             );
-            // TODO: PUBLISH COMMANDS
+            newCorrelations.forEach(x ->
+                    kafkaProducer.send(
+                            new CloneCard(transactionId, x.correlationId(), new CloneCardDto(x.rootCardId(), x.deckId()))
+                    ));
         }
 
         // 1. check card has matching correlation

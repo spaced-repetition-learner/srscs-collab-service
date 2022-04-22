@@ -94,9 +94,8 @@ public class CollaborationService {
                 collaboration.getName().getName(),
                 transactionId
         );
-        // transactionId == deck_correlation_id !!
         kafkaProducer.send(new CreateDeck(
-                transactionId, new CreateDeckDto(userId, collaboration.getName().getName()))
+                transactionId, transactionId, new CreateDeckDto(userId, collaboration.getName().getName()))
         );
     }
 

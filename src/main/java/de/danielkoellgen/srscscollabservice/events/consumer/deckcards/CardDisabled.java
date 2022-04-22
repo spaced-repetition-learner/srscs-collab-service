@@ -20,7 +20,7 @@ public class CardDisabled extends AbstractConsumerEvent {
 
     @Override
     public void execute() {
-        //TODO
+        //NO IMPLEMENTATION
     }
 
     @Override

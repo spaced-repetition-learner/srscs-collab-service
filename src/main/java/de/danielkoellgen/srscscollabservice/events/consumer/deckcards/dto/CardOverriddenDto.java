@@ -12,7 +12,9 @@ public record CardOverriddenDto(
 
     @NotNull UUID newCardId,
 
-    @NotNull UUID deckId
+    @NotNull UUID deckId,
+
+    @NotNull UUID userId
 
 ) {
     public static @NotNull CardOverriddenDto makeFromSerialization(@NotNull String serialized) throws JsonProcessingException {

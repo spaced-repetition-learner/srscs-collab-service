@@ -1,6 +1,10 @@
 package de.danielkoellgen.srscscollabservice.domain.collaborationcard.application;
 
 import com.datastax.oss.driver.shaded.guava.common.collect.Streams;
+import de.danielkoellgen.srscscollabservice.commands.producer.deckcards.CloneCard;
+import de.danielkoellgen.srscscollabservice.commands.producer.deckcards.OverrideCard;
+import de.danielkoellgen.srscscollabservice.commands.producer.deckcards.dto.CloneCardDto;
+import de.danielkoellgen.srscscollabservice.commands.producer.deckcards.dto.OverrideCardDto;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.CollaborationRepository;
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.CollaborationCard;
@@ -48,6 +52,7 @@ public class ExternallyOverriddenCardService {
                 .findCollaborationCardWithCorrelation_byCardIdOnRootCardId(parentCardId);
         if (collaborationCardByParentCardId.isPresent()) {
             CollaborationCard fullCollaborationCardOnRootCard = collaborationCardByParentCardId.get();
+            UUID rootCardId = fullCollaborationCardOnRootCard.getCorrelations().get(0).rootCardId();
             Collaboration collaboration = collaborationRepository
                     .findCollaborationById(fullCollaborationCardOnRootCard.getCollaborationId()).get();
             Pair<List<Correlation>, List<Correlation>> response =  fullCollaborationCardOnRootCard.addNewCardVersion(
@@ -58,8 +63,17 @@ public class ExternallyOverriddenCardService {
                     fullCollaborationCardOnRootCard,
                     Streams.concat(overrideCorrelations.stream(), cloneCorrelations.stream()).toList()
             );
-            // TODO: PUBLISH COMMANDS
-            // TODO: how are override events mapped? missing referenceid
+            cloneCorrelations.forEach(x ->
+                    kafkaProducer.send(
+                            new CloneCard(transactionId, x.correlationId(), new CloneCardDto(x.rootCardId(),x.deckId()))
+                    ));
+            overrideCorrelations.forEach(x ->
+                    kafkaProducer.send(
+                            new OverrideCard(transactionId, x.correlationId(), new OverrideCardDto(
+                                    x.deckId(),
+                                    x.parentCardId(),
+                                    x.rootCardId())) //TODO
+                    ));
         }
 
         // 1. check card has matching correlation

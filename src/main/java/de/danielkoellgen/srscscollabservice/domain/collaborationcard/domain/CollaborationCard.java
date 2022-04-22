@@ -30,7 +30,7 @@ public class CollaborationCard {
         Correlation cardOwnerCorrelation = Correlation.makeNewWithCard(
                 cardOwnerUserId, rootCardId, cardOwnerDeckId);
         List<Correlation> pendingCorrelations = collaboration.getParticipants().values().stream()
-                .filter(x -> x.isActive())
+                .filter(x -> x.isActive() && x.getDeck() != null)
                 .filter(x -> !x.getUser().getUserId().equals(cardOwnerUserId))
                 .map(x -> Correlation.makeNew(rootCardId, x.getUserId(), x.getDeck().getDeckId()))
                 .toList();
@@ -66,10 +66,10 @@ public class CollaborationCard {
                 .filter(x -> x.rootCardId().equals(rootCardId))
                 .filter(x -> !x.userId().equals(cardOwnerUserId))
                 .filter(x -> collaboration.getParticipants().get(x.userId()).isActive())
-                .map(x -> Correlation.makeNew(newCardId, x.userId(), x.deckId()))
+                .map(x -> Correlation.makeNewAsOverride(newCardId, x.userId(), x.deckId(), x.cardId()))
                 .toList();
         List<Correlation> newCloneCorrelations = collaboration.getParticipants().values().stream()
-                .filter(x -> x.isActive())
+                .filter(x -> x.isActive() && x.getDeck() != null)
                 .filter(x -> correlations.stream()
                         .filter(y -> y.rootCardId().equals(rootCardId))
                         .noneMatch(y -> y.userId().equals(x.getUserId())))

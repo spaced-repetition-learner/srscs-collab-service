@@ -64,7 +64,7 @@ public class CollaborationByIdMap{
                 participant.getUserId(),
                 collaboration.getName().getName(),
                 participant.getUser().getUsername().getUsername(),
-                null,
+                (participant.getDeck() != null ? participant.getDeck().getDeckId() : null),
                 (participant.getDeckCorrelationId() != null ? participant.getDeckCorrelationId() : null),
                 participant.getStatus().stream().map(ParticipantStateMap::new).toList()
         );

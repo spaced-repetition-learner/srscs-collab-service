@@ -20,7 +20,7 @@ public class DeckDisabled extends AbstractConsumerEvent {
 
     @Override
     public void execute() {
-        //TODO
+        //NO IMPLEMENTATION
     }
 
     @Override

@@ -1,6 +1,8 @@
 package de.danielkoellgen.srscscollabservice.events.consumer.deckcards;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import de.danielkoellgen.srscscollabservice.domain.collaboration.application.CollaborationService;
+import de.danielkoellgen.srscscollabservice.domain.collaborationcard.application.CollaborationCardService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -14,10 +16,16 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class KafkaDeckCardsEventConsumer {
 
+    private final CollaborationService collaborationService;
+    private final CollaborationCardService collaborationCardService;
+
     private final Logger logger = LoggerFactory.getLogger(KafkaDeckCardsEventConsumer.class);
 
     @Autowired
-    public KafkaDeckCardsEventConsumer() {
+    public KafkaDeckCardsEventConsumer(CollaborationService collaborationService,
+            CollaborationCardService collaborationCardService) {
+        this.collaborationService = collaborationService;
+        this.collaborationCardService = collaborationCardService;
     }
 
     @KafkaListener(topics = {"${kafka.topic.deckscards}"}, id = "${kafka.groupId.deckscards}")
@@ -37,7 +45,7 @@ public class KafkaDeckCardsEventConsumer {
     }
 
     private void processDeckCreatedEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
-        DeckCreated deckDisabled = new DeckCreated(event);
+        DeckCreated deckDisabled = new DeckCreated(collaborationService, event);
         logger.trace("Received 'DeckCreated' event. [tid={}, payload={}]",
                 deckDisabled.getTransactionId(), deckDisabled);
         deckDisabled.execute();
@@ -51,14 +59,14 @@ public class KafkaDeckCardsEventConsumer {
     }
 
     private void processCardCreatedEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
-        CardCreated cardCreated = new CardCreated(event);
+        CardCreated cardCreated = new CardCreated(collaborationCardService, event);
         logger.trace("Received 'DeckDisabled' event. [tid={}, payload={}]",
                 cardCreated.getTransactionId(), cardCreated);
         cardCreated.execute();
     }
 
     private void processCardOverriddenEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
-        CardOverridden cardOverridden = new CardOverridden(event);
+        CardOverridden cardOverridden = new CardOverridden(collaborationCardService, event);
         logger.trace("Received 'CardOverridden' event. [tid={}, payload={}]",
                 cardOverridden.getTransactionId(), cardOverridden);
         cardOverridden.execute();

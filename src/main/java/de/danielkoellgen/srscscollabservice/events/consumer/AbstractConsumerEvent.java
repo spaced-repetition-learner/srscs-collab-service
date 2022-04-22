@@ -3,6 +3,7 @@ package de.danielkoellgen.srscscollabservice.events.consumer;
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.EventDateTime;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -13,6 +14,8 @@ abstract public class AbstractConsumerEvent implements ConsumerEvent {
     protected final @NotNull UUID eventId;
 
     protected final @NotNull UUID transactionId;
+
+    protected       @Nullable UUID correlationId;
 
     protected final @NotNull String eventName;
 
@@ -26,6 +29,11 @@ abstract public class AbstractConsumerEvent implements ConsumerEvent {
         this.eventId = UUID.fromString(getHeaderValue(event, "eventId"));
         this.transactionId = UUID.fromString(getHeaderValue(event, "transactionId"));
         this.eventName = getHeaderValue(event, "type");
+        try {
+            this.correlationId = UUID.fromString(getHeaderValue(event, "correlationId"));
+        } catch (Exception e) {
+            this.correlationId = null;
+        }
         this.occurredAt = EventDateTime.makeFromFormattedString(getHeaderValue(event, "timestamp"));
         this.receivedAt = new EventDateTime(LocalDateTime.now());
         this.topic = event.topic();
@@ -45,6 +53,11 @@ abstract public class AbstractConsumerEvent implements ConsumerEvent {
     @Override
     public @NotNull UUID getTransactionId() {
         return transactionId;
+    }
+
+    @Override
+    public @Nullable UUID getCorrelationId() {
+        return correlationId;
     }
 
     @Override

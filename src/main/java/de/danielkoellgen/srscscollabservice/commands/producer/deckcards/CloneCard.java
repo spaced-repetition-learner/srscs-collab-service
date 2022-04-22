@@ -1,24 +1,25 @@
-package de.danielkoellgen.srscscollabservice.core.events.producer;
+package de.danielkoellgen.srscscollabservice.commands.producer.deckcards;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.danielkoellgen.srscscollabservice.commands.producer.deckcards.dto.CloneCardDto;
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.EventDateTime;
-import de.danielkoellgen.srscscollabservice.events.consumer.user.dto.UserCreatedDto;
 import de.danielkoellgen.srscscollabservice.events.producer.AbstractProducerEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class UserCreatedProd extends AbstractProducerEvent {
+public class CloneCard extends AbstractProducerEvent {
 
-    private final @NotNull UserCreatedDto payloadDto;
+    @NotNull
+    private final CloneCardDto payloadDto;
 
-    public static final String eventName = "user-created";
+    public static final String eventName = "clone-card";
 
-    public static final String eventTopic = "cdc.users.0";
+    public static final String eventTopic = "cmd.decks-cards.0";
 
-    public UserCreatedProd(@NotNull UUID transactionId, @NotNull UserCreatedDto payloadDto) {
-        super(UUID.randomUUID(), transactionId, null, eventName, eventTopic,
+    public CloneCard(@NotNull UUID transactionId, @NotNull UUID correlationId, @NotNull CloneCardDto payloadDto) {
+        super(UUID.randomUUID(), transactionId, correlationId, eventName, eventTopic,
                 EventDateTime.makeFromLocalDateTime(LocalDateTime.now())
         );
         this.payloadDto = payloadDto;

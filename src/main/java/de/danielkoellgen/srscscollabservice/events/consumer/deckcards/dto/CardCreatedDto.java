@@ -10,7 +10,9 @@ public record CardCreatedDto(
 
     @NotNull UUID cardId,
 
-    @NotNull UUID deckId
+    @NotNull UUID deckId,
+
+    @NotNull UUID userId
 
 ) {
     public static @NotNull CardCreatedDto makeFromSerialization(@NotNull String serialized) throws JsonProcessingException {

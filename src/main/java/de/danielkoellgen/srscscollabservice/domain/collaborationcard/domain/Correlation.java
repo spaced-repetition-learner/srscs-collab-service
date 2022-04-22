@@ -17,25 +17,37 @@ public record Correlation (
 
         @NotNull UUID deckId,
 
-        @Nullable UUID cardId
+        @Nullable UUID cardId,
+
+        @Nullable UUID parentCardId
 ) {
     public Correlation(@NotNull CorrelationByRootCardId map) {
-        this(map.getRootCardId(), map.getCorrelationId(), map.getUserId(), map.getDeckId(), map.getCardId());
+        this(map.getRootCardId(), map.getCorrelationId(), map.getUserId(), map.getDeckId(), map.getCardId(), null);
     }
 
     public static @NotNull Correlation makeNew(@NotNull UUID rootCardId, @NotNull UUID userId, @NotNull UUID deckId) {
-        return new Correlation(rootCardId, UUID.randomUUID(), userId, deckId, null);
+        return new Correlation(rootCardId, UUID.randomUUID(), userId, deckId, null, null);
+    }
+
+    public static @NotNull Correlation makeNewAsOverride(@NotNull UUID rootCardId, @NotNull UUID userId,
+            @NotNull UUID deckId, @NotNull UUID parentCardId) {
+        return new Correlation(rootCardId, UUID.randomUUID(), userId, deckId, null, parentCardId);
     }
 
     public static @NotNull Correlation makeNewWithCard(@NotNull UUID userId, @NotNull UUID deckId, @NotNull UUID cardId) {
-        return new Correlation(cardId, UUID.randomUUID(), userId, deckId, cardId);
+        return new Correlation(cardId, UUID.randomUUID(), userId, deckId, cardId, null);
+    }
+
+    public static @NotNull Correlation makeNewAsOverrideWithCard(@NotNull UUID userId, @NotNull UUID deckId,
+            @NotNull UUID cardId, @NotNull UUID parentCardId) {
+        return new Correlation(cardId, UUID.randomUUID(), userId, deckId, cardId, parentCardId);
     }
 
     public Correlation addCard(@NotNull UUID correlationId, @NotNull UUID cardId) {
         if (!this.correlationId.equals(correlationId)) {
             throw new RuntimeException("Correlation-ids do not match.");
         }
-        return new Correlation(rootCardId, correlationId, userId, deckId, cardId);
+        return new Correlation(rootCardId, correlationId, userId, deckId, cardId, null);
     }
 
     public Boolean isPending() {
