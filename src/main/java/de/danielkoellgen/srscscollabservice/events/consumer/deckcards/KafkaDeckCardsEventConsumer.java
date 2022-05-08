@@ -60,7 +60,7 @@ public class KafkaDeckCardsEventConsumer {
 
     private void processCardCreatedEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
         CardCreated cardCreated = new CardCreated(collaborationCardService, event);
-        logger.trace("Received 'DeckDisabled' event. [tid={}, payload={}]",
+        logger.trace("Received 'CardCreated' event. [tid={}, payload={}]",
                 cardCreated.getTransactionId(), cardCreated);
         cardCreated.execute();
     }
