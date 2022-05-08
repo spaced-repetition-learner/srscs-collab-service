@@ -53,6 +53,8 @@ REST
 # asyncAPI
 # refactor CollaborationCardService
 
+# clone decks when invitation accepted
+
 
 0622 0900   158
 0931 1301   240
@@ -80,4 +82,6 @@ REST
 475 -> 7.9h
 
 0540 0715   95
-1000
+1000 1430   270
+1500 1530   30
+1740

@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '3.0.0-M1'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
+    id 'com.google.cloud.tools.jib' version '3.2.1'
 }
 
 group = 'de.daniel-koellgen'
@@ -50,4 +51,19 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     systemProperty 'spring.profiles.active', 'dev'
+}
+
+jib {
+    to {
+        image = 'dadepu/srscs_collab:0.1.1'
+        auth {
+            username = System.getenv('USER') ?: 'null'
+            password = System.getenv('PASS') ?: 'null'
+        }
+    }
+    container {
+        appRoot = '/collabService'
+        ports = ['9003']
+        workingDirectory = '/collabService'
+    }
 }
