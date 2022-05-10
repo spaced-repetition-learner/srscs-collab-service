@@ -5,6 +5,7 @@ import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Particip
 import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.maps.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.sleuth.annotation.NewSpan;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
@@ -29,6 +30,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     }
 
     @Override
+    @NewSpan("save collaboration")
     public void saveNewCollaboration(@NotNull Collaboration collaboration) {
         List<CollaborationByIdMap> mappedByIds = collaboration.getParticipants().values().stream()
                 .map(participant -> CollaborationByIdMap.mapFromEntity(collaboration, participant))
@@ -48,6 +50,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     }
 
     @Override
+    @NewSpan("save participant")
     public void saveNewParticipant(@NotNull Collaboration collaboration, @NotNull Participant newParticipant) {
         updateParticipant(collaboration, newParticipant);
 
@@ -66,6 +69,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     }
 
     @Override
+    @NewSpan("update participant")
     public void updateParticipant(@NotNull Collaboration collaboration, @NotNull Participant participant) {
         CollaborationByIdMap mappedById = CollaborationByIdMap
                 .mapFromEntity(collaboration, participant);
@@ -91,6 +95,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     }
 
     @Override
+    @NewSpan("find collaboration by id")
     public @NotNull Optional<Collaboration> findCollaborationById(@NotNull UUID collaborationId) {
         List<CollaborationByIdMap> byIdMaps = cassandraTemplate.select(
                 query(where("collaboration_id").is(collaborationId)),
@@ -103,6 +108,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     }
 
     @Override
+    @NewSpan("find collaboration by deck-correlation-id")
     public @NotNull Optional<UUID> findCollaborationIdByDeckCorrelationId(@NotNull UUID deckCorrelationId) {
         CollaborationByDeckCorrelationIdMap map = cassandraTemplate.selectOne(
                 query(where("deck_correlation_id").is(deckCorrelationId)),
@@ -112,6 +118,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     }
 
     @Override
+    @NewSpan("find collaboration by deck-correlation-id")
     public @NotNull Optional<Collaboration> findCollaborationByDeckCorrelationId(@NotNull UUID deckCorrelationId) {
         Optional<UUID> collaborationId = findCollaborationIdByDeckCorrelationId(deckCorrelationId);
         if (collaborationId.isEmpty()) {
@@ -121,6 +128,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     }
 
     @Override
+    @NewSpan("find collaborations by user-id")
     public @NotNull List<Collaboration> findCollaborationsByUserId(@NotNull UUID userId) {
         List<CollaborationByUserIdMap> byUserIdMaps = cassandraTemplate.select(
                 query(where("user_id").is(userId)),
@@ -141,6 +149,7 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     }
 
     @Override
+    @NewSpan("find collaboration by deck-id")
     public @NotNull Optional<Collaboration> findCollaborationByDeckId(@NotNull UUID deckId) {
         List<CollaborationByDeckIdMap> selectByDeckId = cassandraTemplate.select(
                 query(where("deck_id").is(deckId)), CollaborationByDeckIdMap.class

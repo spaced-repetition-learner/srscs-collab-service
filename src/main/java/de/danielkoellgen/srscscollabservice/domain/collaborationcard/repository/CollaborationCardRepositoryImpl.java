@@ -8,6 +8,7 @@ import de.danielkoellgen.srscscollabservice.domain.collaborationcard.repository.
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.repository.map.CorrelationByRootCardId;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.sleuth.annotation.NewSpan;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
@@ -32,6 +33,7 @@ public class CollaborationCardRepositoryImpl implements CollaborationCardReposit
     }
 
     @Override
+    @NewSpan("save collaboration-card")
     public void saveNewCollaborationCard(@NotNull CollaborationCard collaborationCard) {
         List<CorrelationByCorrelationId> mappedByCorrelationId = CorrelationByCorrelationId.mapFromEntity(
                 collaborationCard.getCorrelations());
@@ -55,6 +57,7 @@ public class CollaborationCardRepositoryImpl implements CollaborationCardReposit
     }
 
     @Override
+    @NewSpan("save correlation")
     public void saveUpdatedCorrelation(@NotNull CollaborationCard collaborationCard, @NotNull Correlation correlation) {
         assert correlation.cardId() != null;
 
@@ -70,6 +73,7 @@ public class CollaborationCardRepositoryImpl implements CollaborationCardReposit
     }
 
     @Override
+    @NewSpan("save card-version")
     public void saveNewCardVersion(@NotNull CollaborationCard collaborationCard, @NotNull List<Correlation> newCorrelations) {
         CorrelationByCollaborationId mappedByCollaborationId = CorrelationByCollaborationId.mapFromEntity(
                 collaborationCard.getCollaborationId(), newCorrelations.get(0));
@@ -93,6 +97,7 @@ public class CollaborationCardRepositoryImpl implements CollaborationCardReposit
     }
 
     @Override
+    @NewSpan("find collaboration-card by correlation-id")
     public Optional<CollaborationCard> findCollaborationCardWithCorrelation_byCorrelationId(@NotNull UUID correlationId) {
         CorrelationByCorrelationId byCorrelationId = cassandraTemplate.selectOne(
                 query(where("correlation_id").is(correlationId)), CorrelationByCorrelationId.class
@@ -119,6 +124,7 @@ public class CollaborationCardRepositoryImpl implements CollaborationCardReposit
     }
 
     @Override
+    @NewSpan("find collaboration-card by root-card-id")
     public Optional<CollaborationCard> findCollaborationCardWithCorrelation_byCardIdOnRootCardId(@NotNull UUID cardId) {
         CorrelationByCardId byCardId = cassandraTemplate.selectOne(
                 query(where("card_id").is(cardId)), CorrelationByCardId.class
