@@ -13,6 +13,7 @@ import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.Coll
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.sleuth.annotation.NewSpan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +40,7 @@ public class CollaborationController {
     }
 
     @PostMapping(value = "/collaborations", consumes = {"application/json"}, produces = {"application/json"})
+    @NewSpan("controller-start-new-collaboration")
     public ResponseEntity<CollaborationResponseDto> startNewCollaboration(
             @RequestBody CollaborationRequestDto requestDto) {
         UUID transactionId = UUID.randomUUID();
@@ -70,6 +72,7 @@ public class CollaborationController {
 
     @PostMapping(value = "/collaborations/{collaboration-id}/participants", consumes = {"application/json"},
             produces = {"application/json"})
+    @NewSpan("controller-invite-user-to-collaboration")
     public ResponseEntity<ParticipantResponseDto> inviteUserToCollaboration(
             @PathVariable("collaboration-id") UUID collaborationId, @RequestBody ParticipantRequestDto requestDto) {
         UUID transactionId = UUID.randomUUID();
@@ -94,6 +97,7 @@ public class CollaborationController {
     }
 
     @PostMapping(value = "/collaborations/{collaboration-id}/participants/{user-id}/state")
+    @NewSpan("controller-accept-participation")
     public ResponseEntity<?> acceptParticipation(@PathVariable("collaboration-id") UUID collaborationId,
             @PathVariable("user-id") UUID userId) {
         UUID transactionId = UUID.randomUUID();
@@ -122,6 +126,7 @@ public class CollaborationController {
     }
 
     @DeleteMapping(value = "/collaborations/{collaboration-id}/participants/{user-id}")
+    @NewSpan("controller-end-participation")
     public ResponseEntity<?> endParticipation(@PathVariable("collaboration-id") UUID collaborationId,
             @PathVariable("user-id") UUID userId) {
         UUID transactionId = UUID.randomUUID();
@@ -146,6 +151,7 @@ public class CollaborationController {
     }
 
     @GetMapping(value = "/collaborations/{collaboration-id}", produces = {"application/json"})
+    @NewSpan("controller-fetch-collaboration-by-id")
     public ResponseEntity<CollaborationResponseDto> fetchCollaborationById(
             @PathVariable("collaboration-id") UUID collaborationId) {
         UUID transactionId = UUID.randomUUID();
@@ -168,6 +174,7 @@ public class CollaborationController {
     }
 
     @GetMapping(value = "/collaborations", produces = {"application/json"})
+    @NewSpan("controller-fetch-collaboration-by-userid")
     public ResponseEntity<List<CollaborationResponseDto>> fetchCollaborationByUserId(@RequestParam("user-id") UUID userId) {
         UUID transactionId = UUID.randomUUID();
         logger.trace("GET /collaborations?user-id={}: Fetch Collaboration by user-id. [tid={}]",

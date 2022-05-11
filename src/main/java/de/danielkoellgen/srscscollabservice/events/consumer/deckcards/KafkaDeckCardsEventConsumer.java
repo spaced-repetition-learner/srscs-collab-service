@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.sleuth.Span;
+import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +20,9 @@ public class KafkaDeckCardsEventConsumer {
 
     private final CollaborationService collaborationService;
     private final CollaborationCardService collaborationCardService;
+
+    @Autowired
+    private Tracer tracer;
 
     private final Logger logger = LoggerFactory.getLogger(KafkaDeckCardsEventConsumer.class);
 
@@ -45,38 +50,73 @@ public class KafkaDeckCardsEventConsumer {
     }
 
     private void processDeckCreatedEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
-        DeckCreated deckDisabled = new DeckCreated(collaborationService, event);
-        logger.trace("Received 'DeckCreated' event. [tid={}, payload={}]",
-                deckDisabled.getTransactionId(), deckDisabled);
-        deckDisabled.execute();
+        Span newSpan = tracer.nextSpan().name("event-deck-created");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+
+            DeckCreated deckDisabled = new DeckCreated(collaborationService, event);
+            logger.trace("Received 'DeckCreated' event. [tid={}, payload={}]",
+                    deckDisabled.getTransactionId(), deckDisabled);
+            deckDisabled.execute();
+
+        } finally {
+            newSpan.end();
+        }
     }
 
     private void processDeckDisabledEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
-        DeckDisabled deckDisabled = new DeckDisabled(event);
-        logger.trace("Received 'DeckDisabled' event. [tid={}, payload={}]",
-                deckDisabled.getTransactionId(), deckDisabled);
-        deckDisabled.execute();
+        Span newSpan = tracer.nextSpan().name("event-deck-disabled");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+
+            DeckDisabled deckDisabled = new DeckDisabled(event);
+            logger.trace("Received 'DeckDisabled' event. [tid={}, payload={}]",
+                    deckDisabled.getTransactionId(), deckDisabled);
+            deckDisabled.execute();
+
+        } finally {
+            newSpan.end();
+        }
     }
 
     private void processCardCreatedEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
-        CardCreated cardCreated = new CardCreated(collaborationCardService, event);
-        logger.trace("Received 'CardCreated' event. [tid={}, payload={}]",
-                cardCreated.getTransactionId(), cardCreated);
-        cardCreated.execute();
+        Span newSpan = tracer.nextSpan().name("event-card-created");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+
+            CardCreated cardCreated = new CardCreated(collaborationCardService, event);
+            logger.trace("Received 'CardCreated' event. [tid={}, payload={}]",
+                    cardCreated.getTransactionId(), cardCreated);
+            cardCreated.execute();
+
+        } finally {
+            newSpan.end();
+        }
     }
 
     private void processCardOverriddenEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
-        CardOverridden cardOverridden = new CardOverridden(collaborationCardService, event);
-        logger.trace("Received 'CardOverridden' event. [tid={}, payload={}]",
-                cardOverridden.getTransactionId(), cardOverridden);
-        cardOverridden.execute();
+        Span newSpan = tracer.nextSpan().name("event-card-overridden");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+
+            CardOverridden cardOverridden = new CardOverridden(collaborationCardService, event);
+            logger.trace("Received 'CardOverridden' event. [tid={}, payload={}]",
+                    cardOverridden.getTransactionId(), cardOverridden);
+            cardOverridden.execute();
+
+        } finally {
+            newSpan.end();
+        }
     }
 
     private void processCardDisabledEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
-        CardDisabled cardDisabled = new CardDisabled(event);
-        logger.trace("Received 'CardDisabled' event. [tid={}, payload={}]",
-                cardDisabled.getTransactionId(), cardDisabled);
-        cardDisabled.execute();
+        Span newSpan = tracer.nextSpan().name("event-card-disabled");
+        try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
+
+            CardDisabled cardDisabled = new CardDisabled(event);
+            logger.trace("Received 'CardDisabled' event. [tid={}, payload={}]",
+                    cardDisabled.getTransactionId(), cardDisabled);
+            cardDisabled.execute();
+
+        } finally {
+            newSpan.end();
+        }
     }
 
     public static String getHeaderValue(ConsumerRecord<String, String> event, String key) {
