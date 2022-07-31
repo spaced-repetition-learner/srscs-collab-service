@@ -66,7 +66,7 @@ public class CollaborationByDeckIdMap {
         Map<UUID, Participant> participants = mappedParticipants.stream()
                 .map(x -> {
                     User user = new User(x.participantUserId, null, null);
-                    Deck deck = new Deck(x.deckId, user);
+                    Deck deck = x.participantDeckId != null ? new Deck(x.participantDeckId, user) : null;
                     return new Participant(
                             user,
                             deck,
