@@ -13,6 +13,8 @@ import de.danielkoellgen.srscscollabservice.domain.domainprimitives.Username;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
 import de.danielkoellgen.srscscollabservice.domain.user.repository.UserRepository;
 import de.danielkoellgen.srscscollabservice.events.producer.KafkaProducer;
+import de.danielkoellgen.srscscollabservice.events.producer.collaboration.DeckAdded;
+import de.danielkoellgen.srscscollabservice.events.producer.collaboration.dto.DeckAddedDto;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,6 +147,10 @@ public class CollaborationService {
                     collaboration, updatedParticipant);
             logger.trace("Saved Participant as 'updateDeckAddedParticipant'.");
             logger.info("Deck added to Participant.");
+
+            kafkaProducer.send(new DeckAdded(getTraceIdOrEmptyString(),
+                    new DeckAddedDto(optCollaboration.get().getCollaborationId(), userId, deckId))
+            );
 
         } else {
             logger.trace("Deck does not belong to any active Participant.");
