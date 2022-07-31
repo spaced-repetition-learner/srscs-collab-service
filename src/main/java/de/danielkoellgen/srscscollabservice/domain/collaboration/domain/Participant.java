@@ -37,7 +37,7 @@ public class Participant {
 
     public static @NotNull Participant createNewParticipant(@NotNull User user) {
         return new Participant(user, null, null, new ArrayList<>(List.of(
-                new State(UUID.randomUUID(), ParticipantStatus.INVITED, LocalDateTime.now())
+                new State(ParticipantStatus.INVITED, LocalDateTime.now())
         )));
     }
 
@@ -49,27 +49,24 @@ public class Participant {
             throw new ParticipantStateException("Accepting a participation whose status is "+getCurrentState().status()+
                     " is not allowed.");
         }
-        status = Stream.concat(status.stream(), Stream.of(
-                new State(UUID.randomUUID(), ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now())
-        )).toList();
-        deckCorrelationId = UUID.randomUUID();
-
-
+        State newState = new State(ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now());
+        status = Stream.concat(status.stream(), Stream.of(newState)).toList();
+        logger.debug("New Accepted-State: {}", newState);
         deckCorrelationId = UUID.randomUUID();
         logger.debug("deck-correlation-id is {}", deckCorrelationId);
     }
 
     public void endParticipation() throws ParticipantStateException {
         if (getCurrentState().status() == ParticipantStatus.INVITED) {
-            status = Stream.concat(status.stream(), Stream.of(
-                    new State(UUID.randomUUID(), ParticipantStatus.INVITATION_DECLINED, LocalDateTime.now())
-            )).toList();
+            State newState = new State(ParticipantStatus.INVITATION_DECLINED, LocalDateTime.now());
+            status = Stream.concat(status.stream(), Stream.of(newState)).toList();
+            logger.debug("New State: {}", newState);
             return;
         }
         if (getCurrentState().status() == ParticipantStatus.INVITATION_ACCEPTED) {
-            status = Stream.concat(status.stream(), Stream.of(
-                    new State(UUID.randomUUID(), ParticipantStatus.TERMINATED, LocalDateTime.now())
-            )).toList();
+            State newState = new State(ParticipantStatus.TERMINATED, LocalDateTime.now());
+            status = Stream.concat(status.stream(), Stream.of(newState)).toList();
+            logger.debug("New State: {}", newState);
             return;
         }
 

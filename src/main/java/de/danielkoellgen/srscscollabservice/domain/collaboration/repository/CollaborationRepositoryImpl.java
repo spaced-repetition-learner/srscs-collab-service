@@ -52,46 +52,131 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
     @Override
     @NewSpan("save participant")
     public void saveNewParticipant(@NotNull Collaboration collaboration, @NotNull Participant newParticipant) {
-        updateParticipant(collaboration, newParticipant);
+        // by id
+        CollaborationByIdMap mappedById = CollaborationByIdMap
+                .mapFromEntity(collaboration, newParticipant);
+        cassandraTemplate.insert(mappedById);
 
+        // by deck-id
+        //      for each user's deck
+        //          -> insert participant
+        List<CollaborationByDeckIdMap> mappedByDeckId = collaboration.getParticipants().values().stream()
+                .filter(x -> x.getDeck() != null)
+                .map(x -> CollaborationByDeckIdMap.mapFromEntity(x.getDeck().getDeckId(), collaboration, newParticipant))
+                .toList();
+        mappedByDeckId.forEach(cassandraTemplate::insert);
+
+        // by user-id (1)
+        //      for each user
+        //          -> update participant
         List<CollaborationByUserIdMap> mappedByUserIds = collaboration.getParticipants().values().stream()
-                .map(x -> CollaborationByUserIdMap
-                        .mapFromEntity(newParticipant.getUserId(), collaboration, x))
+                .map(x -> CollaborationByUserIdMap.mapFromEntity(x.getUserId(), collaboration, newParticipant))
                 .toList();
         mappedByUserIds.forEach(cassandraTemplate::insert);
 
-        List<CollaborationByDeckIdMap> mappedByDeckIds = collaboration.getParticipants().values().stream()
-                .filter(x -> x.getDeck() != null)
-                .map(x -> CollaborationByDeckIdMap.mapFromEntity(x.getDeck().getDeckId(), collaboration))
-                .flatMap(Collection::stream)
+
+        // by user-id (2)
+        //      by new user-id
+        //          for each user
+        //              -> insert participant
+        mappedByUserIds = collaboration.getParticipants().values().stream()
+                .map(x -> CollaborationByUserIdMap.mapFromEntity(newParticipant.getUserId(), collaboration, x))
                 .toList();
-        mappedByDeckIds.forEach(cassandraTemplate::insert);
+        mappedByUserIds.forEach(cassandraTemplate::insert);
     }
 
     @Override
-    @NewSpan("update participant")
-    public void updateParticipant(@NotNull Collaboration collaboration, @NotNull Participant participant) {
+    @NewSpan("update accepted participant")
+    public void updateAcceptedParticipant(@NotNull Collaboration collaboration, @NotNull Participant participant) {
+        // by id
         CollaborationByIdMap mappedById = CollaborationByIdMap
                 .mapFromEntity(collaboration, participant);
         cassandraTemplate.insert(mappedById);
 
-        List<CollaborationByUserIdMap> mappedByUserIds = collaboration.getParticipants().values().stream()
-                .map(x -> CollaborationByUserIdMap
-                        .mapFromEntity(x.getUserId(), collaboration, participant)
-                ).toList();
-        mappedByUserIds.forEach(cassandraTemplate::insert);
-
+        // by deck-id
+        //      for each user's deck
+        //          -> update participant
         List<CollaborationByDeckIdMap> mappedByDeckId = collaboration.getParticipants().values().stream()
                 .filter(x -> x.getDeck() != null)
                 .map(x -> CollaborationByDeckIdMap.mapFromEntity(x.getDeck().getDeckId(), collaboration, participant))
                 .toList();
+        mappedByDeckId.forEach(cassandraTemplate::insert);
+
+        // by user-id
+        //      for each user
+        //          -> update participant
+        List<CollaborationByUserIdMap> mappedByUserIds = collaboration.getParticipants().values().stream()
+                .map(x -> CollaborationByUserIdMap.mapFromEntity(x.getUserId(), collaboration, participant))
+                .toList();
         mappedByUserIds.forEach(cassandraTemplate::insert);
 
+        // by correlation-id
         if (participant.getDeckCorrelationId() != null) {
             CollaborationByDeckCorrelationIdMap mappedByDeckCorrelationId = CollaborationByDeckCorrelationIdMap
                     .mapFromEntity(collaboration, participant);
             cassandraTemplate.insert(mappedByDeckCorrelationId);
         }
+    }
+
+    @Override
+    @NewSpan("update terminated participant")
+    public void updateTerminatedParticipant(@NotNull Collaboration collaboration, @NotNull Participant participant) {
+        // by id
+        CollaborationByIdMap mappedById = CollaborationByIdMap
+                .mapFromEntity(collaboration, participant);
+        cassandraTemplate.insert(mappedById);
+
+        // by deck-id
+        //      for each user's deck
+        //          -> update participant
+        List<CollaborationByDeckIdMap> mappedByDeckId = collaboration.getParticipants().values().stream()
+                .filter(x -> x.getDeck() != null)
+                .map(x -> CollaborationByDeckIdMap.mapFromEntity(x.getDeck().getDeckId(), collaboration, participant))
+                .toList();
+        mappedByDeckId.forEach(cassandraTemplate::insert);
+
+        // by user-id
+        //      for each user
+        //          -> update participant
+        List<CollaborationByUserIdMap> mappedByUserIds = collaboration.getParticipants().values().stream()
+                .map(x -> CollaborationByUserIdMap.mapFromEntity(x.getUserId(), collaboration, participant))
+                .toList();
+        mappedByUserIds.forEach(cassandraTemplate::insert);
+    }
+
+    @Override
+    @NewSpan("update deck-added participant")
+    public void updateDeckAddedParticipant(@NotNull Collaboration collaboration, @NotNull Participant participant) {
+        // by id
+        CollaborationByIdMap mappedById = CollaborationByIdMap
+                .mapFromEntity(collaboration, participant);
+        cassandraTemplate.insert(mappedById);
+
+        // by deck-id (1)
+        //      for each user's deck
+        //          -> update participant
+        List<CollaborationByDeckIdMap> mappedByDeckId = collaboration.getParticipants().values().stream()
+                .filter(x -> x.getDeck() != null)
+                .map(x -> CollaborationByDeckIdMap.mapFromEntity(x.getDeck().getDeckId(), collaboration, participant))
+                .toList();
+        mappedByDeckId.forEach(cassandraTemplate::insert);
+
+        // by deck-id (2)
+        //      by new deck-id
+        //          for each user
+        //              -> save new
+        mappedByDeckId = collaboration.getParticipants().values().stream()
+                .map(x -> CollaborationByDeckIdMap.mapFromEntity(participant.getDeck().getDeckId(), collaboration, x))
+                .toList();
+        mappedByDeckId.forEach(cassandraTemplate::insert);
+
+        // by user-id
+        //      for each user
+        //          -> update participant
+        List<CollaborationByUserIdMap> mappedByUserIds = collaboration.getParticipants().values().stream()
+                .map(x -> CollaborationByUserIdMap.mapFromEntity(x.getUserId(), collaboration, participant))
+                .toList();
+        mappedByUserIds.forEach(cassandraTemplate::insert);
     }
 
     @Override
@@ -157,6 +242,6 @@ public class CollaborationRepositoryImpl implements CollaborationRepository {
         if (selectByDeckId.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(CollaborationByDeckIdMap.mapToEntityFromDatabase(selectByDeckId));
+        return Optional.of(CollaborationByDeckIdMap.mapToEntityFromDatabase(selectByDeckId)); //TODO
     }
 }

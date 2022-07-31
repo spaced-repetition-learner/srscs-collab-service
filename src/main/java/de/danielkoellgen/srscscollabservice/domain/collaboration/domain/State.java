@@ -7,9 +7,6 @@ import java.util.UUID;
 
 public record State(
     @NotNull
-    UUID transactionId,
-
-    @NotNull
     ParticipantStatus status,
 
     @NotNull

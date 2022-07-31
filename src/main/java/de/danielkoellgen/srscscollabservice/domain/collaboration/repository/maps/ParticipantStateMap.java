@@ -18,10 +18,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ParticipantStateMap {
 
-    @Column("transaction_id")
-    @NotNull
-    private UUID transactionId;
-
     @Column("status")
     @NotNull
     private Integer status;
@@ -31,12 +27,10 @@ public class ParticipantStateMap {
     private LocalDateTime createdAt;
 
     public ParticipantStateMap(State participantState) {
-        this(participantState.transactionId(),
-                ParticipantStatus.fromEnum(participantState.status()), participantState.createdAt());
+        this(ParticipantStatus.fromEnum(participantState.status()), participantState.createdAt());
     }
 
     public static @NotNull State mapToEntityFromDatabase(@NotNull ParticipantStateMap stateMap) {
-        return new State(stateMap.transactionId,
-                ParticipantStatus.fromNumber(stateMap.status), stateMap.createdAt);
+        return new State(ParticipantStatus.fromNumber(stateMap.status), stateMap.createdAt);
     }
 }

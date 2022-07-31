@@ -14,7 +14,11 @@ public interface CollaborationRepository {
 
     void saveNewParticipant(@NotNull Collaboration collaboration, @NotNull Participant newParticipant);
 
-    void updateParticipant(@NotNull Collaboration collaboration, @NotNull Participant participant);
+    void updateAcceptedParticipant(@NotNull Collaboration collaboration, @NotNull Participant participant);
+
+    void updateTerminatedParticipant(@NotNull Collaboration collaboration, @NotNull Participant participant);
+
+    void updateDeckAddedParticipant(@NotNull Collaboration collaboration, @NotNull Participant participant);
 
     @NotNull Optional<Collaboration> findCollaborationById(@NotNull UUID collaborationId);
 

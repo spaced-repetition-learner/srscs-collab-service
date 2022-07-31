@@ -36,7 +36,6 @@ CREATE TABLE user_by_username (
 );
 
 CREATE TYPE participation_state (
-    transaction_id UUID,
     status INT,
     created_at TIMESTAMP
 );

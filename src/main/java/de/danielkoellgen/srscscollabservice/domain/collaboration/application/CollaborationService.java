@@ -98,7 +98,7 @@ public class CollaborationService {
         logger.debug("Participation accepted.");
         logger.debug("{}", updatedParticipant);
 
-        collaborationRepository.updateParticipant(collaboration, updatedParticipant);
+        collaborationRepository.updateAcceptedParticipant(collaboration, updatedParticipant);
         logger.trace("Saved Participant as 'updateAcceptedParticipant'.");
 
         logger.info("User '{}' accepted to participate in '{}'.",
@@ -122,8 +122,7 @@ public class CollaborationService {
         logger.debug("Participation ended.");
         logger.debug("{}", updatedParticipant);
 
-        collaborationRepository
-                .updateParticipant(collaboration, updatedParticipant);
+        collaborationRepository.updateTerminatedParticipant(collaboration, updatedParticipant);
         logger.trace("Saved Participant as 'updateTerminatedParticipant'.");
         logger.info("User '{}' ended his participation in '{}'.",
                 updatedParticipant.getUser().getUsername().getUsername(), collaboration.getName().getName()
@@ -143,8 +142,7 @@ public class CollaborationService {
             Participant updatedParticipant = collaboration.setDeck(userId, correlationId, new Deck(deckId, null));
             logger.debug("Deck added to Participant.");
             logger.debug("{}", updatedParticipant);
-            collaborationRepository.updateParticipant(
-                    collaboration, updatedParticipant);
+            collaborationRepository.updateDeckAddedParticipant(collaboration, updatedParticipant);
             logger.trace("Saved Participant as 'updateDeckAddedParticipant'.");
             logger.info("Deck added to Participant.");
 
