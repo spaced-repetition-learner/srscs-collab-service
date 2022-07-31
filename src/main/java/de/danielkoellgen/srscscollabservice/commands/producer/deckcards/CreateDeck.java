@@ -18,7 +18,7 @@ public class CreateDeck extends AbstractProducerEvent {
 
     public static final String eventTopic = "cmd.decks-cards.0";
 
-    public CreateDeck(@NotNull UUID transactionId, @NotNull UUID correlationId, @NotNull CreateDeckDto payloadDto) {
+    public CreateDeck(@NotNull String transactionId, @NotNull UUID correlationId, @NotNull CreateDeckDto payloadDto) {
         super(UUID.randomUUID(), transactionId, correlationId, eventName, eventTopic,
                 EventDateTime.makeFromLocalDateTime(LocalDateTime.now())
         );
@@ -33,5 +33,13 @@ public class CreateDeck extends AbstractProducerEvent {
         } catch (Exception e) {
             throw new RuntimeException("ObjectMapper conversion failed.");
         }
+    }
+
+    @Override
+    public String toString() {
+        return "CreateDeck{" +
+                "payloadDto=" + payloadDto +
+                ", " + super.toString() +
+                '}';
     }
 }

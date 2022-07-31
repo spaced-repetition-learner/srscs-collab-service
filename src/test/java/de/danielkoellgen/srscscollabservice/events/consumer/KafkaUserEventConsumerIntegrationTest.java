@@ -58,7 +58,7 @@ public class KafkaUserEventConsumerIntegrationTest {
     public void shouldCreateUserWhenReceivingUserCreatedEvent() throws Exception {
         // given
         UserCreatedProd userCreatedProd = new UserCreatedProd(
-                UUID.randomUUID(), new UserCreatedDto(userId, username.getUsername())
+                "", new UserCreatedDto(userId, username.getUsername())
         );
 
         // when
@@ -80,17 +80,11 @@ public class KafkaUserEventConsumerIntegrationTest {
     @Test
     public void shouldDisableUserWhenReceivingUserDisabledEvent() throws Exception {
         // given
-        userService.addExternallyCreatedUser(
-                UUID.randomUUID(), userId, username
-        );
-        UserDisabledProd userDisabledProd = new UserDisabledProd(
-                UUID.randomUUID(), new UserDisabledDto(userId)
-        );
+        userService.addExternallyCreatedUser(userId, username);
+        UserDisabledProd userDisabledProd = new UserDisabledProd("", new UserDisabledDto(userId));
 
         // when
-        kafkaUserEventConsumer.receive(
-                mapToConsumerRecordConverter.convert(userDisabledProd)
-        );
+        kafkaUserEventConsumer.receive(mapToConsumerRecordConverter.convert(userDisabledProd));
 
         // then
         User fetchedUserById = userRepository.findUserByUserId(userId).orElseThrow();

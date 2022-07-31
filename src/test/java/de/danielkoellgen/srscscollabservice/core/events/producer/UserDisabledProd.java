@@ -17,7 +17,7 @@ public class UserDisabledProd extends AbstractProducerEvent {
 
     public static final String eventTopic = "cdc.users.0";
 
-    public UserDisabledProd(@NotNull UUID transactionId, @NotNull UserDisabledDto payloadDto) {
+    public UserDisabledProd(@NotNull String transactionId, @NotNull UserDisabledDto payloadDto) {
         super(UUID.randomUUID(), transactionId, null, eventName, eventTopic,
                 EventDateTime.makeFromLocalDateTime(LocalDateTime.now())
         );

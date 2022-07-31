@@ -12,7 +12,7 @@ abstract public class AbstractProducerEvent implements ProducerEvent {
     private final UUID eventId;
 
     @NotNull
-    private final UUID transactionId;
+    private final String transactionId;
 
     @Nullable
     private final UUID correlationId;
@@ -27,7 +27,7 @@ abstract public class AbstractProducerEvent implements ProducerEvent {
     private final EventDateTime occurredAt;
 
     public AbstractProducerEvent(
-            @NotNull UUID eventId, @NotNull UUID transactionId, @Nullable UUID correlationId, @NotNull String eventName,
+            @NotNull UUID eventId, @NotNull String transactionId, @Nullable UUID correlationId, @NotNull String eventName,
             @NotNull String topic, @NotNull EventDateTime occurredAt
     ) {
         this.eventId = eventId;
@@ -44,7 +44,7 @@ abstract public class AbstractProducerEvent implements ProducerEvent {
     }
 
     @Override
-    public @NotNull UUID getTransactionId() {
+    public @NotNull String getTransactionId() {
         return transactionId;
     }
 
@@ -66,5 +66,17 @@ abstract public class AbstractProducerEvent implements ProducerEvent {
     @Override
     public @NotNull EventDateTime getOccurredAt() {
         return occurredAt;
+    }
+
+    @Override
+    public String toString() {
+        return "AbstractProducerEvent{" +
+                "eventId=" + eventId +
+                ", transactionId='" + transactionId + '\'' +
+                ", correlationId=" + correlationId +
+                ", eventName='" + eventName + '\'' +
+                ", topic='" + topic + '\'' +
+                ", occurredAt=" + occurredAt +
+                '}';
     }
 }

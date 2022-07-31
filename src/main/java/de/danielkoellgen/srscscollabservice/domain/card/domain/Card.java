@@ -18,4 +18,12 @@ public class Card {
     @Getter
     @Nullable
     private Deck deck;
+
+    @Override
+    public String toString() {
+        return "Card{" +
+                "cardId=" + cardId +
+                ", deck=" + deck +
+                '}';
+    }
 }

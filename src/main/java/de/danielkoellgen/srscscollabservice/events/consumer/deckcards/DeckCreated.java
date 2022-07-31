@@ -25,10 +25,7 @@ public class DeckCreated extends AbstractConsumerEvent {
 
     @Override
     public void execute() {
-        if (correlationId != null) {
-            collaborationService.addCorrespondingDeckToParticipant(
-                    transactionId, correlationId, payload.deckId(), payload.userId());
-        }
+        collaborationService.addCorrespondingDeckToParticipant(correlationId, payload.deckId(), payload.userId());
     }
 
     @Override
@@ -43,14 +40,9 @@ public class DeckCreated extends AbstractConsumerEvent {
 
     @Override
     public String toString() {
-        return "UserCreated{" +
-                "eventId=" + eventId +
-                ", transactionId=" + transactionId +
-                ", eventName='" + eventName + '\'' +
-                ", occurredAt=" + occurredAt +
-                ", receivedAt=" + receivedAt +
-                ", topic='" + topic + '\'' +
-                ", payload=" + payload +
+        return "DeckCreated{" +
+                "payload=" + payload +
+                ", " + super.toString() +
                 '}';
     }
 }

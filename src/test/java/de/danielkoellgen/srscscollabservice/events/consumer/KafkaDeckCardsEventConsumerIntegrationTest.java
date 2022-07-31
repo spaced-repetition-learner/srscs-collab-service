@@ -39,19 +39,13 @@ public class KafkaDeckCardsEventConsumerIntegrationTest {
     @BeforeEach
     public void setUp() throws Exception {
         user1 = userService.addExternallyCreatedUser(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                new Username("dadepu")
+                UUID.randomUUID(), new Username("dadepu")
         );
         user2 = userService.addExternallyCreatedUser(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                new Username("melsienna")
+                UUID.randomUUID(), new Username("melsienna")
         );
         user3 = userService.addExternallyCreatedUser(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                new Username("sarahve")
+                UUID.randomUUID(), new Username("sarahve")
         );
     }
 
@@ -64,11 +58,11 @@ public class KafkaDeckCardsEventConsumerIntegrationTest {
     public void shouldAddDeckWhenReceivingDeckCreatedEventMatchingCorrelation() throws Exception {
         // given
         Collaboration collaboration = collaborationService.startNewCollaboration(
-                UUID.randomUUID(), new DeckName("anyName"), List.of(user1.getUsername(), user2.getUsername())
+                new DeckName("anyName"), List.of(user1.getUsername(), user2.getUsername())
         );
         UUID invitationAcceptedId = UUID.randomUUID();
         collaborationService.acceptParticipation(
-                invitationAcceptedId, collaboration.getCollaborationId(), user2.getUserId()
+                collaboration.getCollaborationId(), user2.getUserId()
         );
 
         // when

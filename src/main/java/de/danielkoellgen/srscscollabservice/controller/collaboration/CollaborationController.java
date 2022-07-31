@@ -43,31 +43,25 @@ public class CollaborationController {
     @NewSpan("controller-start-new-collaboration")
     public ResponseEntity<CollaborationResponseDto> startNewCollaboration(
             @RequestBody CollaborationRequestDto requestDto) {
-        UUID transactionId = UUID.randomUUID();
-        logger.trace("POST /collaborations: Start new Collaboration '{}'. [tid={}, payload={}]",
-                requestDto.collaborationName(),
-                transactionId,
-                requestDto
-        );
+        logger.debug("POST /collaborations: Start new Collaboration.");
+        logger.debug("{}", requestDto);
+
         Collaboration startedCollaboration;
         try {
             startedCollaboration = collaborationService.startNewCollaboration(
-                    transactionId,
                     requestDto.getMappedCollaborationName(),
                     requestDto.getMappedInvitedUsers()
             );
+            CollaborationResponseDto responseDto = new CollaborationResponseDto(startedCollaboration);
+            logger.trace("Responding 201.");
+            logger.debug("{}", responseDto);
+            return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+
         } catch (NoSuchElementException e) {
-            logger.trace("Request failed. Entity not found. Responding 404. [tid={}, message={}]",
-                    transactionId, e.getStackTrace());
+            logger.trace("Request failed with 404. Entity not found.");
+            logger.trace("{}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.", e);
         }
-        logger.trace("Collaboration '{}' started with {} invited Users. Responding 201. [tid={}, payload={}]",
-                startedCollaboration.getName().getName(),
-                startedCollaboration.getParticipants().size(),
-                transactionId,
-                new CollaborationResponseDto(startedCollaboration)
-        );
-        return new ResponseEntity<>(new CollaborationResponseDto(startedCollaboration), HttpStatus.CREATED);
     }
 
     @PostMapping(value = "/collaborations/{collaboration-id}/participants", consumes = {"application/json"},
@@ -75,121 +69,111 @@ public class CollaborationController {
     @NewSpan("controller-invite-user-to-collaboration")
     public ResponseEntity<ParticipantResponseDto> inviteUserToCollaboration(
             @PathVariable("collaboration-id") UUID collaborationId, @RequestBody ParticipantRequestDto requestDto) {
-        UUID transactionId = UUID.randomUUID();
-        logger.trace("POST /collaborations/{}/participants: Invite User to participate. [tid={}, payload={}]",
-                collaborationId, transactionId, requestDto);
+        logger.debug("POST /collaborations/{}/participants: Invite User to participate.", collaborationId);
+        logger.debug("{}", requestDto);
+
         Participant newParticipant;
         try {
             newParticipant = collaborationService.inviteUserToCollaboration(
-                    transactionId, collaborationId, requestDto.getMappedUsername());
+                    collaborationId, requestDto.getMappedUsername()
+            );
+            ParticipantResponseDto responseDto = new ParticipantResponseDto(newParticipant);
+            logger.trace("Responding 201.");
+            logger.debug("{}", responseDto);
+            return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+
         } catch (NoSuchElementException e) {
-            logger.trace("Request failed. Entity not found. Responding 404. [tid={}]",
-                    transactionId);
+            logger.trace("Request failed with 404. Entity not found.");
+            logger.trace("{}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.",e);
+
         } catch (CollaborationStateException e) {
-            logger.trace("Request failed. Responding 403. [tid={}, message={}]",
-                    transactionId, e.getStackTrace());
+            logger.trace("Request failed with 403.");
+            logger.trace("{}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed.", e);
         }
-        logger.trace("User invited to participate. Responding 201. [tid={}]",
-                transactionId);
-        return new ResponseEntity<>(new ParticipantResponseDto(newParticipant), HttpStatus.CREATED);
     }
 
     @PostMapping(value = "/collaborations/{collaboration-id}/participants/{user-id}/state")
     @NewSpan("controller-accept-participation")
     public ResponseEntity<?> acceptParticipation(@PathVariable("collaboration-id") UUID collaborationId,
             @PathVariable("user-id") UUID userId) {
-        UUID transactionId = UUID.randomUUID();
-        logger.trace("POST /collaborations/{}/participants/{}/state: Accept Participation.[tid={}]",
-                collaborationId, userId, transactionId
-        );
+        logger.debug("POST /collaborations/{}/participants/{}/state: Accept Participation.", collaborationId, userId);
+
         try {
-            collaborationService.acceptParticipation(
-                    transactionId, collaborationId, userId
-            );
+            collaborationService.acceptParticipation(collaborationId, userId);
+            logger.trace("Responding 201.");
+            return new ResponseEntity<>(HttpStatus.CREATED);
+
         } catch (NoSuchElementException e) {
-            logger.trace("Request failed. Entity not found. Responding 404. [tid={}, message={}]",
-                    transactionId, e.getStackTrace()
-            );
+            logger.trace("Request failed with 404.");
+            logger.trace("{}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.", e);
+
         } catch (ParticipantStateException e) {
-            logger.trace("Request failed. Responding 403. [tid={}, message={}]",
-                    transactionId, e.getStackTrace()
-            );
+            logger.trace("Request failed with 403.");
+            logger.trace("{}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed.", e);
         }
-        logger.trace("Participation accepted. Responding 201. [tid={}]",
-                transactionId
-        );
-        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @DeleteMapping(value = "/collaborations/{collaboration-id}/participants/{user-id}")
     @NewSpan("controller-end-participation")
     public ResponseEntity<?> endParticipation(@PathVariable("collaboration-id") UUID collaborationId,
             @PathVariable("user-id") UUID userId) {
-        UUID transactionId = UUID.randomUUID();
-        logger.trace("DELETE /collaborations/{}/participants/{}: End Participation. [tid={}]",
-                collaborationId, userId, transactionId);
+        logger.debug("DELETE /collaborations/{}/participants/{}: End Participation.", collaborationId, userId);
+
         try {
-            collaborationService.endParticipation(
-                    transactionId, collaborationId, userId
-            );
+            collaborationService.endParticipation(collaborationId, userId);
+            logger.trace("Responding 200.");
+            return new ResponseEntity<>(HttpStatus.OK);
+
         } catch (NoSuchElementException e) {
-            logger.trace("Request failed. Entity not found. Responding 404. [tid={}, message={}]",
-                    transactionId, e.getStackTrace());
+            logger.trace("Request failed with 404.");
+            logger.trace("{}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.", e);
+
         } catch (ParticipantStateException e) {
-            logger.trace("Request failed. Responding 403. [tid={}, message={}]",
-                    transactionId, e.getStackTrace());
+            logger.trace("Request failed with 403.");
+            logger.trace("{}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed.", e);
         }
-        logger.trace("Participation ended. Responding 200. [tid={}]",
-                transactionId);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping(value = "/collaborations/{collaboration-id}", produces = {"application/json"})
     @NewSpan("controller-fetch-collaboration-by-id")
     public ResponseEntity<CollaborationResponseDto> fetchCollaborationById(
             @PathVariable("collaboration-id") UUID collaborationId) {
-        UUID transactionId = UUID.randomUUID();
-        logger.trace("GET /collaborations/{}: Fetch Collaboration by id. [tid={}]",
-                collaborationId, transactionId);
-        Collaboration collaboration;
+        logger.debug("GET /collaborations/{}: Fetch Collaboration by id.", collaborationId);
+
         try {
-            collaboration = collaborationRepository.findCollaborationById(collaborationId).get();
+            Collaboration collaboration = collaborationRepository.findCollaborationById(collaborationId).get();
+            CollaborationResponseDto responseDto = new CollaborationResponseDto(collaboration);
+            logger.trace("Responding 200.");
+            logger.trace("{}", responseDto);
+            return new ResponseEntity<>(responseDto, HttpStatus.OK);
+
         } catch (NoSuchElementException e) {
-            logger.trace("Request failed. Entity not found. Responding 404. [tid={}]",
-                    transactionId);
+            logger.trace("Request failed with 404.");
+            logger.trace("{}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Collaboration not found.", e);
         }
-        logger.trace("Collaborations retrieved. Responding 200. [tid={}, payload={}]",
-                transactionId, new CollaborationResponseDto(collaboration));
-        return new ResponseEntity<>(
-                new CollaborationResponseDto(collaboration),
-                HttpStatus.OK
-        );
     }
 
     @GetMapping(value = "/collaborations", produces = {"application/json"})
     @NewSpan("controller-fetch-collaboration-by-userid")
     public ResponseEntity<List<CollaborationResponseDto>> fetchCollaborationByUserId(@RequestParam("user-id") UUID userId) {
-        UUID transactionId = UUID.randomUUID();
-        logger.trace("GET /collaborations?user-id={}: Fetch Collaboration by user-id. [tid={}]",
-                userId, transactionId);
-        List<CollaborationResponseDto> collaboration = collaborationRepository
+        logger.debug("GET /collaborations?user-id={}: Fetch Collaboration by user-id.", userId);
+
+        logger.trace("Fetching Collaborations by user-id {}.", userId);
+        List<CollaborationResponseDto> collaborations = collaborationRepository
                 .findCollaborationsByUserId(userId).stream()
                 .map(CollaborationResponseDto::new)
                 .toList();
-        logger.trace("{} Collaborations retrieved. Responding 200. [tid={}, payload={}]",
-                collaboration.size(),
-                transactionId,
-                collaboration
-        );
-        return new ResponseEntity<>(
-                collaboration, HttpStatus.OK
-        );
+        logger.debug("{} Collaborations fetched.", collaborations.size());
+        logger.debug("{}", collaborations);
+
+        logger.trace("Responding 200.");
+        return new ResponseEntity<>(collaborations, HttpStatus.OK);
     }
 }

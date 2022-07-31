@@ -10,7 +10,7 @@ public interface ConsumerEvent {
 
     @NotNull UUID getEventId();
 
-    @NotNull UUID getTransactionId();
+    @NotNull String getTransactionId();
 
     @Nullable UUID getCorrelationId();
 

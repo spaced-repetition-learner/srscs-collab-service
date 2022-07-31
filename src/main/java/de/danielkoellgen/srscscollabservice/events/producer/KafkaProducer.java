@@ -21,6 +21,9 @@ public class KafkaProducer {
     }
 
     public void send(ProducerEvent event) {
+        logger.debug("Publishing {} event to {}...", event.getEventName(), event.getTopic());
+        logger.debug("{}", event);
+
         ProducerRecord<String, String> record = new ProducerRecord<>(event.getTopic(), event.getSerializedContent());
         record.headers().add(new RecordHeader("eventId", event.getEventId().toString().getBytes()));
         record.headers().add(new RecordHeader("transactionId", event.getTransactionId().toString().getBytes()));
@@ -29,8 +32,8 @@ public class KafkaProducer {
         }
         record.headers().add(new RecordHeader("timestamp", event.getOccurredAt().getFormatted().getBytes()));
         record.headers().add(new RecordHeader("type", event.getEventName().getBytes()));
+
         kafkaTemplate.send(record);
-        logger.trace("Published Event '{}' to {}. [tid={}, payload={}]",
-                event.getEventName(), event.getTopic(), event.getTransactionId(), event.getSerializedContent());
+        logger.trace("{} published.", event.getEventName());
     }
 }

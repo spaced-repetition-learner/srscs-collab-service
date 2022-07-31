@@ -35,6 +35,7 @@ public class KafkaDeckCardsEventConsumer {
 
     @KafkaListener(topics = {"${kafka.topic.deckscards}"}, id = "${kafka.groupId.deckscards}")
     public void receive(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
+        logger.trace("Receiving Deck-Cards-Event...");
         String eventName = getHeaderValue(event, "type");
         switch (eventName) {
             case "deck-created"     -> processDeckCreatedEvent(event);
@@ -43,7 +44,7 @@ public class KafkaDeckCardsEventConsumer {
             case "card-overridden"  -> processCardOverriddenEvent(event);
             case "card-disabled"    -> processCardDisabledEvent(event);
             default -> {
-                logger.trace("Received event on 'cdc.decks-cards.0' of unknown type '{}'.", eventName);
+                logger.debug("Received event on 'cdc.decks-cards.0' of unknown type '{}'.", eventName);
                 throw new RuntimeException("Received event on 'cdc.decks-cards.0' of unknown type '"+eventName+"'.");
             }
         }
@@ -54,9 +55,11 @@ public class KafkaDeckCardsEventConsumer {
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
 
             DeckCreated deckDisabled = new DeckCreated(collaborationService, event);
-            logger.trace("Received 'DeckCreated' event. [tid={}, payload={}]",
-                    deckDisabled.getTransactionId(), deckDisabled);
+            logger.debug("Received 'DeckCreatedEvent'.");
+            logger.debug("{}", deckDisabled);
+            logger.info("Processing 'DeckCreatedEvent'...");
             deckDisabled.execute();
+            logger.info("Event processed.");
 
         } finally {
             newSpan.end();
@@ -68,9 +71,11 @@ public class KafkaDeckCardsEventConsumer {
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
 
             DeckDisabled deckDisabled = new DeckDisabled(event);
-            logger.trace("Received 'DeckDisabled' event. [tid={}, payload={}]",
-                    deckDisabled.getTransactionId(), deckDisabled);
+            logger.debug("Received 'DeckDisabledEvent'.");
+            logger.debug("{}", deckDisabled);
+            logger.info("Processing 'DeckDisabledEvent'...");
             deckDisabled.execute();
+            logger.info("Event processed.");
 
         } finally {
             newSpan.end();
@@ -82,9 +87,11 @@ public class KafkaDeckCardsEventConsumer {
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
 
             CardCreated cardCreated = new CardCreated(collaborationCardService, event);
-            logger.trace("Received 'CardCreated' event. [tid={}, payload={}]",
-                    cardCreated.getTransactionId(), cardCreated);
+            logger.debug("Received 'CardCreatedEvent'.");
+            logger.debug("{}", cardCreated);
+            logger.info("Processing 'CardCreatedEvent'...");
             cardCreated.execute();
+            logger.info("Event processed.");
 
         } finally {
             newSpan.end();
@@ -96,9 +103,11 @@ public class KafkaDeckCardsEventConsumer {
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
 
             CardOverridden cardOverridden = new CardOverridden(collaborationCardService, event);
-            logger.trace("Received 'CardOverridden' event. [tid={}, payload={}]",
-                    cardOverridden.getTransactionId(), cardOverridden);
+            logger.debug("Received 'CardOverriddenEvent'.");
+            logger.debug("{}", cardOverridden);
+            logger.info("Processing 'CardOverriddenEvent'...");
             cardOverridden.execute();
+            logger.info("Event processed.");
 
         } finally {
             newSpan.end();
@@ -110,9 +119,11 @@ public class KafkaDeckCardsEventConsumer {
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
 
             CardDisabled cardDisabled = new CardDisabled(event);
-            logger.trace("Received 'CardDisabled' event. [tid={}, payload={}]",
-                    cardDisabled.getTransactionId(), cardDisabled);
+            logger.debug("Received 'CardOverriddenEven'.");
+            logger.debug("{}", cardDisabled);
+            logger.info("Processing 'CardOverriddenEven'...");
             cardDisabled.execute();
+            logger.info("Event processed.");
 
         } finally {
             newSpan.end();

@@ -31,12 +31,13 @@ public class KafkaUserEventConsumer {
 
     @KafkaListener(topics = {"${kafka.topic.users}"}, id = "${kafka.groupId.users}")
     public void receive(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
+        logger.trace("Receiving User-Event...");
         String eventName = getHeaderValue(event, "type");
         switch (eventName) {
             case "user-created"     -> processUserCreatedEvent(event);
             case "user-disabled"    -> processUserDisabledEvent(event);
             default -> {
-                logger.trace("Received event on 'cdc.users.0' of unknown type '{}'.", eventName);
+                logger.debug("Received event on 'cdc.users.0' of unknown type '{}'.", eventName);
                 throw new RuntimeException("Received event on 'cdc.users.0' of unknown type '"+eventName+"'.");
             }
         }
@@ -47,9 +48,11 @@ public class KafkaUserEventConsumer {
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
 
             UserCreated userCreated = new UserCreated(userService, event);
-            logger.trace("Received 'UserCreated' event. [tid={}, payload={}]",
-                    userCreated.getTransactionId(), userCreated);
+            logger.debug("Received 'UserCreatedEvent'.");
+            logger.debug("{}", userCreated);
+            logger.info("Processing 'UserCreatedEvent'...");
             userCreated.execute();
+            logger.info("Event processed.");
 
         } finally {
             newSpan.end();
@@ -61,9 +64,11 @@ public class KafkaUserEventConsumer {
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
 
             UserDisabled userDisabled = new UserDisabled(userService, event);
-            logger.trace("Received 'UserDisabled' event. [tid={}, payload={}]",
-                    userDisabled.getTransactionId(), userDisabled);
+            logger.debug("Received 'UserDisabledEvent'.");
+            logger.debug("{}", userDisabled);
+            logger.info("Processing 'UserDisabledEvent'...");
             userDisabled.execute();
+            logger.info("Event processed.");
 
         } finally {
             newSpan.end();

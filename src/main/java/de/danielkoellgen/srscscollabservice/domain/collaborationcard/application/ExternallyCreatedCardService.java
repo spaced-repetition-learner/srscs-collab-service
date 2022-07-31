@@ -10,7 +10,10 @@ import de.danielkoellgen.srscscollabservice.domain.collaborationcard.repository.
 import de.danielkoellgen.srscscollabservice.events.producer.KafkaProducer;
 import org.javatuples.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +29,11 @@ public class ExternallyCreatedCardService {
     private final KafkaProducer kafkaProducer;
 
     @Autowired
+    private Tracer tracer;
+
+    private final Logger logger = LoggerFactory.getLogger(ExternallyCreatedCardService.class);
+
+    @Autowired
     public ExternallyCreatedCardService(CollaborationRepository collaborationRepository,
             CollaborationCardRepository collaborationCardRepository, KafkaProducer kafkaProducer) {
         this.collaborationRepository = collaborationRepository;
@@ -33,42 +41,43 @@ public class ExternallyCreatedCardService {
         this.kafkaProducer = kafkaProducer;
     }
 
-    public void processCard(@NotNull UUID transactionId, @NotNull UUID correlationId, @NotNull UUID cardId,
-            @NotNull UUID deckId, @NotNull UUID userId) {
-        Optional<CollaborationCard> collaborationCardByCorrelation = collaborationCardRepository
-                .findCollaborationCardWithCorrelation_byCorrelationId(correlationId);
-        if (collaborationCardByCorrelation.isPresent()) {
-            CollaborationCard partialCollaboration = collaborationCardByCorrelation.get();
-            Correlation updatedCorrelation = partialCollaboration.addCard(correlationId, cardId);
-            collaborationCardRepository.saveUpdatedCorrelation(
-                    partialCollaboration, updatedCorrelation
-            );
-            return;
-        }
+    public void createNewCollaborationCard(@NotNull UUID cardId, @NotNull UUID deckId, @NotNull UUID userId) {
+        logger.trace("Creating new CollaborationCard...");
+        logger.trace("Fetching Collaboration by deck-id {}...", deckId);
         Optional<Collaboration> collaborationByDeckId = collaborationRepository.findCollaborationByDeckId(deckId);
+
         if (collaborationByDeckId.isPresent()) {
             Collaboration fullCollaboration = collaborationByDeckId.get();
+            logger.debug("Matching Collaboration fetched.");
+            logger.debug("{}", fullCollaboration);
+
             Pair<CollaborationCard, List<Correlation>> response = CollaborationCard
                     .createNew(fullCollaboration, cardId, userId, deckId);
             CollaborationCard newCollaborationCard = response.getValue0();
             List<Correlation> newCorrelations = response.getValue1();
-            collaborationCardRepository.saveNewCollaborationCard(
-                    newCollaborationCard
-            );
-            newCorrelations.forEach(x ->
-                    kafkaProducer.send(
-                            new CloneCard(transactionId, x.correlationId(), new CloneCardDto(x.rootCardId(), x.deckId()))
-                    ));
+            logger.debug("New CollaborationCard created with {} unmatched correlations.", newCorrelations.size());
+            logger.debug("{}", newCollaborationCard);
+
+            collaborationCardRepository.saveNewCollaborationCard(newCollaborationCard);
+            logger.trace("New CollaborationCard saved.");
+
+            logger.info("New CollaborationCard created for Card.");
+            logger.info("Publishing {} Commands to clone Card into Decks...", newCorrelations.size());
+            newCorrelations.forEach(x -> kafkaProducer.send(
+                    new CloneCard(getTraceIdOrEmptyString(), x.correlationId(), new CloneCardDto(x.rootCardId(), x.deckId()))
+            ));
+            return;
         }
 
-        // 1. check card has matching correlation
-        //      yes: update correlation
-        //           return;
+        logger.debug("No Collaboration was found.");
+        logger.trace("No new CollaborationCard was created.");
+    }
 
-        // 2. check card belongs to collaboration via deck
-        //      yes: create new collaboration-card
-        //           publish commands
-
-        // END
+    private String getTraceIdOrEmptyString() {
+        try {
+            return tracer.currentSpan().context().traceId();
+        } catch (Exception e) {
+            return "";
+        }
     }
 }

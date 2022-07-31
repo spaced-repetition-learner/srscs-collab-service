@@ -18,7 +18,7 @@ public class CloneCard extends AbstractProducerEvent {
 
     public static final String eventTopic = "cmd.decks-cards.0";
 
-    public CloneCard(@NotNull UUID transactionId, @NotNull UUID correlationId, @NotNull CloneCardDto payloadDto) {
+    public CloneCard(@NotNull String transactionId, @NotNull UUID correlationId, @NotNull CloneCardDto payloadDto) {
         super(UUID.randomUUID(), transactionId, correlationId, eventName, eventTopic,
                 EventDateTime.makeFromLocalDateTime(LocalDateTime.now())
         );
@@ -33,5 +33,13 @@ public class CloneCard extends AbstractProducerEvent {
         } catch (Exception e) {
             throw new RuntimeException("ObjectMapper conversion failed.");
         }
+    }
+
+    @Override
+    public String toString() {
+        return "CloneCard{" +
+                "payloadDto=" + payloadDto +
+                ", " + super.toString() +
+                '}';
     }
 }

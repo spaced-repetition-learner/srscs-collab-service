@@ -1,6 +1,5 @@
 package de.danielkoellgen.srscscollabservice.domain.collaboration.domain;
 
-import de.danielkoellgen.srscscollabservice.domain.core.IllegalEntityPersistenceState;
 import de.danielkoellgen.srscscollabservice.domain.deck.domain.Deck;
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.DeckName;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
@@ -8,8 +7,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -26,43 +29,45 @@ public class Collaboration {
     @Nullable
     private Map<UUID, Participant> participants;
 
+    private static final Logger logger = LoggerFactory.getLogger(Collaboration.class);
+
     public Collaboration(@NotNull UUID collaborationId) {
         this.collaborationId = collaborationId;
     }
 
-    public static @NotNull Collaboration startNewCollaboration(@NotNull UUID transactionId, @NotNull DeckName name,
-            @NotNull List<User> invitedUsers) {
+    public static @NotNull Collaboration startNewCollaboration(@NotNull DeckName name, @NotNull List<User> invitedUsers) {
         Map<UUID, Participant> participants = invitedUsers.stream()
-                .collect(Collectors.toMap(User::getUserId,
-                        user -> Participant.createNewParticipant(transactionId, user))
-                );
+                .collect(Collectors.toMap(User::getUserId, Participant::createNewParticipant)
+        );
         return new Collaboration(UUID.randomUUID(), name, participants);
     }
 
-    public @NotNull Participant inviteParticipant(@NotNull UUID transactionId, @NotNull User user)
-            throws CollaborationStateException{
+    public @NotNull Participant inviteParticipant(@NotNull User user) throws CollaborationStateException{
         if (getCollaborationStatus() == CollaborationStatus.TERMINATED) {
+            logger.debug("Failed to invite User. Collaboration-Status is {}.", getCollaborationStatus());
             throw new CollaborationStateException("Collaboration has already ended.");
         }
+
         if (getParticipants().containsKey(user.getUserId())) {
+            logger.debug("Failed to invite User. User already participates.");
             throw new CollaborationStateException("User is already participating.");
         }
-        Participant newParticipant = Participant.createNewParticipant(transactionId, user);
-        getParticipants().put(user.getUserId(), newParticipant);
+
+        Participant newParticipant = Participant.createNewParticipant(user);
+        participants.put(user.getUserId(), newParticipant);
+        logger.debug("New Participant added: {}", newParticipant);
         return newParticipant;
     }
 
-    public @NotNull Participant acceptInvitation(@NotNull UUID transactionId, @NotNull UUID userId) throws
-            ParticipantStateException {
+    public @NotNull Participant acceptInvitation(@NotNull UUID userId) throws ParticipantStateException {
         Participant participant = getParticipants().get(userId);
-        participant.acceptParticipation(transactionId);
+        participant.acceptParticipation();
         return participant;
     }
 
-    public @NotNull Participant endParticipation(@NotNull UUID transactionId, @NotNull UUID userId) throws
-            ParticipantStateException {
+    public @NotNull Participant endParticipation(@NotNull UUID userId) throws ParticipantStateException {
         Participant participant = getParticipants().get(userId);
-        participant.endParticipation(transactionId);
+        participant.endParticipation();
         return participant;
     }
 

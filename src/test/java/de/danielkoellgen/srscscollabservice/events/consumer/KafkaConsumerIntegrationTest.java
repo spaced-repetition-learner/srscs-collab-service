@@ -46,7 +46,7 @@ public class KafkaConsumerIntegrationTest {
     @Test
     public void shouldConsumeLiveEvent() throws Exception {
         // given
-        UserCreatedProd userCreated = new UserCreatedProd(UUID.randomUUID(), new UserCreatedDto(
+        UserCreatedProd userCreated = new UserCreatedProd("", new UserCreatedDto(
                 userId, username.getUsername()
         ));
 

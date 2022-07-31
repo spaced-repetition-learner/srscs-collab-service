@@ -49,19 +49,13 @@ public class CollaborationCardControllerIntegrationTest {
     @BeforeEach
     public void setUp() throws Exception {
         user1 = userService.addExternallyCreatedUser(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                new Username("dadepu")
+                UUID.randomUUID(), new Username("dadepu")
         );
         user2 = userService.addExternallyCreatedUser(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                new Username("melsienna")
+                UUID.randomUUID(), new Username("melsienna")
         );
         user3 = userService.addExternallyCreatedUser(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                new Username("sarahve")
+                UUID.randomUUID(), new Username("sarahve")
         );
     }
 

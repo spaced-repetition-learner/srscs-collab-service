@@ -1,9 +1,12 @@
 package de.danielkoellgen.srscscollabservice.domain.user.repository;
 
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.Username;
+import de.danielkoellgen.srscscollabservice.domain.user.application.UserService;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
 import de.danielkoellgen.srscscollabservice.domain.user.repository.maps.UserByUserIdMap;
 import de.danielkoellgen.srscscollabservice.domain.user.repository.maps.UserByUsernameMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.Tracer;
@@ -26,6 +29,8 @@ public class UserRepositoryImpl implements UserRepository {
     private final CassandraOperations cassandraTemplate;
     private final CqlTemplate cqlTemplate;
 
+    private final Logger logger = LoggerFactory.getLogger(UserRepositoryImpl.class);
+
     @Autowired
     public UserRepositoryImpl(CassandraOperations cassandraTemplate, CqlTemplate cqlTemplate) {
         this.cassandraTemplate = cassandraTemplate;
@@ -34,8 +39,11 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void save(User user) {
+        logger.trace("Saving User...");
         UserByUserIdMap userByUserIdMap = new UserByUserIdMap(user);
+        logger.debug("{}", userByUserIdMap);
         UserByUsernameMap userByUsernameMap = new UserByUsernameMap(user);
+        logger.debug("{}", userByUsernameMap);
         cassandraTemplate.batchOps()
                 .insert(userByUserIdMap)
                 .insert(userByUsernameMap)

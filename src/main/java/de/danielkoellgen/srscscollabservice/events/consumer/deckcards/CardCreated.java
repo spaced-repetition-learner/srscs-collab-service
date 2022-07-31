@@ -25,10 +25,9 @@ public class CardCreated extends AbstractConsumerEvent {
 
     @Override
     public void execute() {
-        if (correlationId != null) {
-            collaborationCardService.processNewlyExternallyCreatedCard(
-                    transactionId, correlationId, payload.cardId(), payload.deckId(), payload.userId());
-        }
+        collaborationCardService.processNewlyExternallyCreatedCard(
+                correlationId, payload.cardId(), payload.deckId(), payload.userId()
+        );
     }
 
     @Override
@@ -43,14 +42,9 @@ public class CardCreated extends AbstractConsumerEvent {
 
     @Override
     public String toString() {
-        return "UserCreated{" +
-                "eventId=" + eventId +
-                ", transactionId=" + transactionId +
-                ", eventName='" + eventName + '\'' +
-                ", occurredAt=" + occurredAt +
-                ", receivedAt=" + receivedAt +
-                ", topic='" + topic + '\'' +
-                ", payload=" + payload +
+        return "CardCreated{" +
+                "payload=" + payload +
+                ", " + super.toString() +
                 '}';
     }
 }

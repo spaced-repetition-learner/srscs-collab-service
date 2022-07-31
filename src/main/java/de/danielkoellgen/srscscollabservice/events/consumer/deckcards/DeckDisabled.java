@@ -35,14 +35,9 @@ public class DeckDisabled extends AbstractConsumerEvent {
 
     @Override
     public String toString() {
-        return "UserCreated{" +
-                "eventId=" + eventId +
-                ", transactionId=" + transactionId +
-                ", eventName='" + eventName + '\'' +
-                ", occurredAt=" + occurredAt +
-                ", receivedAt=" + receivedAt +
-                ", topic='" + topic + '\'' +
-                ", payload=" + payload +
+        return "DeckDisabled{" +
+                "payload=" + payload +
+                ", " + super.toString() +
                 '}';
     }
 }
