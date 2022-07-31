@@ -1,68 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="warn" packages="">
+<Configuration status="warn" name="dadepu-player" packages="">
     <Appenders>
-        <RollingFile name="Domain-Info" fileName="logs/dinfo.log" filePattern="logs/dinfo%i.log">
-            <PatternLayout>
-                <Pattern>%d{HH:mm:ss.SSS} [%t] %-5level %15c - %msg%n</Pattern>
-            </PatternLayout>
-            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        <RollingFile name="INFO" filePattern="logs/app%d{yyyy-MM-dd-HH}-%i.log" immediateFlush="true">
+            <JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json">
+                <EventTemplateAdditionalField key="service_name" value="collab_service"/>
+            </JsonTemplateLayout>
             <Policies>
                 <OnStartupTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="1 MB"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
-            <DefaultRolloverStrategy fileIndex="min" max="5"/>
+            <DirectWriteRolloverStrategy maxFiles="1000"/>
         </RollingFile>
 
-        <RollingFile name="Domain-Trace" fileName="logs/dtrace.log" filePattern="logs/dtrace%i.log">
-            <PatternLayout>
-                <Pattern>%d{HH:mm:ss.SSS} [%t] %-5level %15c - %msg%n</Pattern>
-            </PatternLayout>
-            <Policies>
-                <OnStartupTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="1 MB"/>
-            </Policies>
-            <DefaultRolloverStrategy fileIndex="min" max="5"/>
-        </RollingFile>
-
-        <RollingFile name="Info" fileName="logs/info.log" filePattern="logs/info%i.log">
-            <PatternLayout>
-                <Pattern>%d{HH:mm:ss.SSS} [%t] %-5level %15c - %msg%n</Pattern>
-            </PatternLayout>
-<!--            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>-->
-            <Policies>
-                <OnStartupTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="1 MB"/>
-            </Policies>
-            <DefaultRolloverStrategy fileIndex="min" max="5"/>
-        </RollingFile>
-
-        <RollingFile name="Error" fileName="logs/error.log" filePattern="logs/error%i.log">
-            <PatternLayout>
-                <Pattern>%d{HH:mm:ss.SSS} [%t] %-5level %15c - %msg%n</Pattern>
-            </PatternLayout>
-            <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
-            <Policies>
-                <OnStartupTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="1 MB"/>
-            </Policies>
-            <DefaultRolloverStrategy fileIndex="min" max="2"/>
-        </RollingFile>
-
-        <Console name="Console" target="SYSTEM_OUT">
+        <Console name="CONSOLE" target="SYSTEM_OUT">
             <PatternLayout pattern="%d [%t] %-5level %c{1.} - %msg%n%throwable" />
         </Console>
     </Appenders>
 
     <Loggers>
-        <AsyncLogger name="de.danielkoellgen.srscscollabservice" level="trace" additivity="true">
-            <AppenderRef ref="Domain-Info"/>
-            <AppenderRef ref="Domain-Trace"/>
-        </AsyncLogger>
+        <Logger name="de.danielkoellgen.srscscollabservice" level="trace" additivity="false">
+            <AppenderRef ref="CONSOLE"/>
+            <AppenderRef ref="INFO"/>
+        </Logger>
 
-        <AsyncRoot level="INFO">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="Error"/>
-            <AppenderRef ref="Info"/>
-        </AsyncRoot>
+        <Root level="INFO">
+            <AppenderRef ref="CONSOLE"/>
+            <AppenderRef ref="INFO"/>
+        </Root>
     </Loggers>
 </Configuration>
