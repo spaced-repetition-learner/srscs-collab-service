@@ -114,7 +114,7 @@ public class CollaborationCardRepositoryImpl implements CollaborationCardReposit
         }
         return Optional.of(new CollaborationCard(
                 byRootCardIds.get(0).getCollaborationCardId(),
-                byRootCardIds.get(0).getCorrelationId(),
+                byRootCardIds.get(0).getCollaborationId(),
                 null,
                 byRootCardIds.stream()
                         .filter(x -> x.getCorrelationId().equals(correlationId))
@@ -140,8 +140,8 @@ public class CollaborationCardRepositoryImpl implements CollaborationCardReposit
             return Optional.empty();
         }
         return Optional.of(new CollaborationCard(
+                byRootCardIds.get(0).getCollaborationCardId(),
                 byRootCardIds.get(0).getCollaborationId(),
-                byRootCardIds.get(0).getCorrelationId(),
                 null,
                 byRootCardIds.stream()
                         .map(Correlation::new)
