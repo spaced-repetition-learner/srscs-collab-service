@@ -76,8 +76,11 @@ public class Participant {
     }
 
     public void setDeck(@NotNull UUID deckCorrelationId, @NotNull Deck deck) {
-        if (deckCorrelationId != this.deckCorrelationId) {
-            throw new IllegalArgumentException("Deck does not match transaction-id");
+        if (!this.deckCorrelationId.equals(deckCorrelationId)) {
+            throw new IllegalArgumentException("Deck does not match deckCorrelationId. Current id is " +
+                    this.deckCorrelationId +
+                    ", argument-id is "+deckCorrelationId
+            );
         }
         this.deck = deck;
         logger.trace("Deck added to Participant.");
