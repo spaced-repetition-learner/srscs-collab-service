@@ -49,8 +49,10 @@ public class CollaborationService {
             @NotNull List<Username> usernames) throws NoSuchElementException {
         logger.trace("Starting a new Collaboration...");
         logger.trace("Fetching invited Users...");
-        List<User> invitedUsers = usernames.stream()
-                .map(username -> userRepository.findUserByUsername(username).get())
+        List<User> invitedUsers = usernames
+                .stream()
+                .map(username -> userRepository.findUserByUsername(username).orElse(null))
+                .filter(Objects::nonNull)
                 .toList();
         logger.debug("{} / {} Users fetched.", usernames.size(), invitedUsers.size());
         logger.debug("{}", invitedUsers);
