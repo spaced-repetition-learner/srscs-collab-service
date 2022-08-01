@@ -17,7 +17,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    private final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private final Logger log = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
     public UserService(UserRepository userRepository) {
@@ -25,26 +25,26 @@ public class UserService {
     }
 
     public @NotNull User addExternallyCreatedUser(@NotNull UUID userId, @NotNull Username username) {
-        logger.trace("Adding externally created User...");
+        log.trace("Adding externally created User...");
         User user = User.makeNewUser(userId, username);
-        logger.debug("{}", user);
+        log.debug("{}", user);
 
         userRepository.save(user);
-        logger.trace("User saved.");
-        logger.info("Externally created User '{}' added.", user.getUsername().getUsername());
+        log.trace("User saved.");
+        log.info("Externally created User '{}' added.", user.getUsername().getUsername());
         return user;
     }
 
     public void disableExternallyDisabledUser(@NotNull UUID userId) throws NoSuchElementException {
-        logger.trace("Disabling externally disabled User...");
-        logger.trace("Fetching User by id {}.", userId);
+        log.trace("Disabling externally disabled User...");
+        log.trace("Fetching User by id {}.", userId);
         User user = userRepository.findUserByUserId(userId).get();
-        logger.debug("{}", user);
+        log.debug("{}", user);
 
         user.disableUser();
-        logger.debug("User disabled. isActive={}", user.getIsActive());
+        log.debug("User disabled. isActive={}", user.getIsActive());
         userRepository.save(user);
-        logger.trace("User saved.");
-        logger.info("User '{}' disabled.", user.getUsername().getUsername());
+        log.trace("User saved.");
+        log.info("User '{}' disabled.", user.getUsername().getUsername());
     }
 }

@@ -13,7 +13,7 @@ public class KafkaProducer {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    private final Logger logger = LoggerFactory.getLogger(KafkaProducer.class);
+    private final Logger log = LoggerFactory.getLogger(KafkaProducer.class);
 
     @Autowired
     public KafkaProducer(KafkaTemplate<String, String> kafkaTemplate) {
@@ -21,8 +21,8 @@ public class KafkaProducer {
     }
 
     public void send(ProducerEvent event) {
-        logger.debug("Publishing {} event to {}...", event.getEventName(), event.getTopic());
-        logger.debug("{}", event);
+        log.debug("Publishing '{}'-event to '{}' kafka-topic. {}", event.getEventName(),
+                event.getTopic(), event);
 
         ProducerRecord<String, String> record = new ProducerRecord<>(event.getTopic(),
                 event.getSerializedContent());
@@ -39,6 +39,5 @@ public class KafkaProducer {
         record.headers().add(new RecordHeader("type",
                 event.getEventName().getBytes()));
         kafkaTemplate.send(record);
-        logger.trace("{} published.", event.getEventName());
     }
 }

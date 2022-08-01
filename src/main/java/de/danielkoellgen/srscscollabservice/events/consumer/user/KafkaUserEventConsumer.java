@@ -22,7 +22,7 @@ public class KafkaUserEventConsumer {
     @Autowired
     private Tracer tracer;
 
-    private final Logger logger = LoggerFactory.getLogger(KafkaUserEventConsumer.class);
+    private final Logger log = LoggerFactory.getLogger(KafkaUserEventConsumer.class);
 
     @Autowired
     public KafkaUserEventConsumer(UserService userService) {
@@ -31,13 +31,12 @@ public class KafkaUserEventConsumer {
 
     @KafkaListener(topics = {"${kafka.topic.users}"}, id = "${kafka.groupId.users}")
     public void receive(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
-        logger.trace("Receiving User-Event...");
         String eventName = getHeaderValue(event, "type");
         switch (eventName) {
             case "user-created"     -> processUserCreatedEvent(event);
             case "user-disabled"    -> processUserDisabledEvent(event);
             default -> {
-                logger.debug("Received event on 'cdc.users.0' of unknown type '{}'.", eventName);
+                log.debug("Received event on 'cdc.users.0' of unknown type '{}'.", eventName);
                 throw new RuntimeException("Received event on 'cdc.users.0' of unknown type '" +
                         eventName+"'.");
             }
@@ -48,13 +47,9 @@ public class KafkaUserEventConsumer {
             throws JsonProcessingException {
         Span newSpan = tracer.nextSpan().name("event-user-created");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
-
             UserCreated userCreated = new UserCreated(userService, event);
-            logger.debug("Received 'UserCreatedEvent'.");
-            logger.debug("{}", userCreated);
-            logger.info("Processing 'UserCreatedEvent'...");
+            log.info("Received 'UserCreatedEvent'. {}", userCreated);
             userCreated.execute();
-            logger.info("Event processed.");
 
         } finally {
             newSpan.end();
@@ -65,13 +60,9 @@ public class KafkaUserEventConsumer {
             throws JsonProcessingException {
         Span newSpan = tracer.nextSpan().name("event-user-disabled");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
-
             UserDisabled userDisabled = new UserDisabled(userService, event);
-            logger.debug("Received 'UserDisabledEvent'.");
-            logger.debug("{}", userDisabled);
-            logger.info("Processing 'UserDisabledEvent'...");
+            log.info("Received 'UserDisabledEvent'. {}", userDisabled);
             userDisabled.execute();
-            logger.info("Event processed.");
 
         } finally {
             newSpan.end();

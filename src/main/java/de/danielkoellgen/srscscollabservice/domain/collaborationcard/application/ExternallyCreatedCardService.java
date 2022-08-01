@@ -31,7 +31,7 @@ public class ExternallyCreatedCardService {
     @Autowired
     private Tracer tracer;
 
-    private final Logger logger = LoggerFactory.getLogger(ExternallyCreatedCardService.class);
+    private final Logger log = LoggerFactory.getLogger(ExternallyCreatedCardService.class);
 
     @Autowired
     public ExternallyCreatedCardService(CollaborationRepository collaborationRepository,
@@ -43,39 +43,33 @@ public class ExternallyCreatedCardService {
 
     public void createNewCollaborationCard(@NotNull UUID cardId, @NotNull UUID deckId,
             @NotNull UUID userId) {
-        logger.trace("Creating new CollaborationCard...");
-        logger.trace("Fetching Collaboration by deck-id {}...", deckId);
+        log.trace("Creating new CollaborationCard...");
+        log.trace("Fetching Collaboration by deck-id {}...", deckId);
         Optional<Collaboration> collaborationByDeckId = collaborationRepository
                 .findCollaborationByDeckId(deckId);
 
         if (collaborationByDeckId.isPresent()) {
             Collaboration fullCollaboration = collaborationByDeckId.get();
-            logger.debug("Matching Collaboration fetched.");
-            logger.debug("{}", fullCollaboration);
+            log.debug("Collaboration fetched by deck-id: {}", fullCollaboration);
 
             Pair<CollaborationCard, List<Correlation>> response = CollaborationCard
                     .createNew(fullCollaboration, cardId, userId, deckId);
             CollaborationCard newCollaborationCard = response.getValue0();
             List<Correlation> newCorrelations = response.getValue1();
-            logger.debug("New CollaborationCard created with {} unmatched correlations.",
-                    newCorrelations.size());
-            logger.debug("{}", newCollaborationCard);
+            log.debug("New CollaborationCard created with {} unmatched correlations. " +
+                            "New CollaborationCard: {}",
+                    newCorrelations.size(), newCollaborationCard);
 
             collaborationCardRepository.saveNewCollaborationCard(newCollaborationCard);
-            logger.trace("New CollaborationCard saved.");
-
-            logger.info("New CollaborationCard created for Card.");
-            logger.info("Publishing {} Commands to clone Card into Decks...",
+            log.info("New CollaborationCard successfully created for Card.");
+            log.info("Publishing {} Commands to clone Card into Decks...",
                     newCorrelations.size());
             newCorrelations.forEach(x -> kafkaProducer.send(
                     new CloneCard(getTraceIdOrEmptyString(), x.correlationId(),
-                            new CloneCardDto(x.rootCardId(), x.deckId()))
-            ));
-            return;
+                            new CloneCardDto(x.rootCardId(), x.deckId()))));
+        } else {
+            log.debug("No Collaboration was found. No CorrelationCard was created.");
         }
-
-        logger.debug("No Collaboration was found.");
-        logger.trace("No new CollaborationCard was created.");
     }
 
     private String getTraceIdOrEmptyString() {

@@ -35,7 +35,7 @@ public class CollaborationService {
     @Autowired
     private Tracer tracer;
 
-    private final Logger logger = LoggerFactory.getLogger(CollaborationService.class);
+    private final Logger log = LoggerFactory.getLogger(CollaborationService.class);
 
     @Autowired
     public CollaborationService(CollaborationRepository collaborationRepository,
@@ -47,113 +47,104 @@ public class CollaborationService {
 
     public Collaboration startNewCollaboration(@NotNull DeckName collaborationName,
             @NotNull List<Username> usernames) throws NoSuchElementException {
-        logger.trace("Starting a new Collaboration...");
-        logger.trace("Fetching invited Users...");
+        log.trace("Starting a new Collaboration...");
         List<User> invitedUsers = usernames
                 .stream()
                 .map(username -> userRepository.findUserByUsername(username).orElse(null))
                 .filter(Objects::nonNull)
                 .toList();
-        logger.debug("{} / {} Users fetched.", usernames.size(), invitedUsers.size());
-        logger.debug("{}", invitedUsers);
+        log.debug("{} / {} Users fetched. {}", invitedUsers.size(), usernames.size(), invitedUsers);
 
         Collaboration collaboration = Collaboration.startNewCollaboration(collaborationName,
                 invitedUsers);
-        logger.debug("{}", collaboration);
+        log.debug("New Collaboration: {}", collaboration);
 
         collaborationRepository.saveNewCollaboration(collaboration);
-        logger.trace("New Collaboration '{}' saved.", collaboration.getName().getName());
-        logger.info("New Collaboration '{}' started with {} invited User(s).",
+        log.info("New Collaboration '{}' successfully started with {} invited User(s).",
                 collaborationName.getName(), invitedUsers.size());
         return collaboration;
     }
 
     public Participant inviteUserToCollaboration(@NotNull UUID collaborationId,
             @NotNull Username username) throws NoSuchElementException, CollaborationStateException {
-        logger.trace("Inviting User '{}' to join the Collaboration...", username.getUsername());
-        logger.trace("Fetching User by username {}...", username.getUsername());
-        User user = userRepository.findUserByUsername(username).get();
-        logger.debug("{}", user);
+        log.trace("Inviting '{}' to join the Collaboration...", username.getUsername());
 
-        logger.trace("Fetching Collaboration by id {}...", collaborationId);
-        Collaboration collaboration = collaborationRepository.findCollaborationById(collaborationId).get();
+        User user = userRepository.findUserByUsername(username).orElseThrow();
+        log.debug("User fetched by username. {}", user);
+
+        Collaboration collaboration = collaborationRepository
+                .findCollaborationById(collaborationId).orElseThrow();
+        log.debug("Collaboration fetched by id: {}", collaboration);
 
         Participant newParticipant = collaboration.inviteParticipant(user);
-        logger.debug("User invited as new Participant.");
-        logger.debug("{}", newParticipant);
-
         collaborationRepository.saveNewParticipant(collaboration, newParticipant);
-        logger.trace("Participant saved as 'saveNewParticipant'.");
-        logger.info("User '{}' invited to participante in Collaboration '{}'.",
+        log.info("User '{}' successfully invited to participate in Collaboration '{}'.",
                 username.getUsername(), collaboration.getName().getName());
         return newParticipant;
     }
 
     public void acceptParticipation(@NotNull UUID collaborationId, @NotNull UUID userId) throws
             NoSuchElementException, ParticipantStateException {
-        logger.trace("Accepting Participation...");
-        logger.trace("Fetching Collaboration by id {}...", collaborationId);
-        Collaboration collaboration = collaborationRepository.findCollaborationById(collaborationId).get();
-        logger.debug("{}", collaboration);
+        log.trace("Accepting Participation...");
+
+        Collaboration collaboration = collaborationRepository
+                .findCollaborationById(collaborationId).orElseThrow();
+        log.debug("Collaboration fetched by id: {}", collaboration);
 
         Participant updatedParticipant = collaboration.acceptInvitation(userId);
-        logger.debug("Participation accepted.");
-        logger.debug("{}", updatedParticipant);
+        log.debug("Participation accepted. Updated Participant: {}", updatedParticipant);
 
         collaborationRepository.updateAcceptedParticipant(collaboration, updatedParticipant);
-        logger.trace("Saved Participant as 'updateAcceptedParticipant'.");
+        log.info("User '{}' successfully accepted to participate in '{}'.",
+                updatedParticipant.getUser().getUsername().getUsername(),
+                collaboration.getName().getName());
 
-        logger.info("User '{}' accepted to participate in '{}'.",
-                updatedParticipant.getUser().getUsername().getUsername(), collaboration.getName().getName()
-        );
-        logger.info("Sending CreateDeck Command to create a new Deck.");
+        log.info("Sending 'CreateDeck-Command' for Participant.");
         kafkaProducer.send(new CreateDeck(
-                getTraceIdOrEmptyString(), updatedParticipant.getDeckCorrelationId(), new CreateDeckDto(
-                        userId, collaboration.getName().getName())));
+                getTraceIdOrEmptyString(), updatedParticipant.getDeckCorrelationId(),
+                new CreateDeckDto(userId, collaboration.getName().getName())));
     }
 
     public void endParticipation(@NotNull UUID collaborationId, @NotNull UUID userId) throws
             NoSuchElementException, ParticipantStateException {
-        logger.trace("Ending Participation...");
-        logger.trace("Fetching Collaboration by id {}.", collaborationId);
-        Collaboration collaboration = collaborationRepository.findCollaborationById(collaborationId).get();
+        log.trace("Ending Participation...");
+
+        Collaboration collaboration = collaborationRepository
+                .findCollaborationById(collaborationId).orElseThrow();
+        log.debug("Collaboration fetched by id: {}", collaboration);
 
         Participant updatedParticipant = collaboration.endParticipation(userId);
-        logger.debug("Participation ended.");
-        logger.debug("{}", updatedParticipant);
+        log.debug("Participation ended. Updated Participant: {}", updatedParticipant);
 
         collaborationRepository.updateTerminatedParticipant(collaboration, updatedParticipant);
-        logger.trace("Saved Participant as 'updateTerminatedParticipant'.");
-        logger.info("User '{}' ended his participation in '{}'.",
+        log.info("User '{}' successfully ended his participation in '{}'.",
                 updatedParticipant.getUser().getUsername().getUsername(),
                 collaboration.getName().getName());
     }
 
     public void addCorrespondingDeckToParticipant(@NotNull UUID correlationId, @NotNull UUID deckId,
             @NotNull UUID userId) {
-        logger.trace("Adding corresponding Deck to Participant...");
-        logger.trace("Fetching Collaboration by correlation-id {}.", correlationId);
+        log.trace("Adding corresponding Deck to Participant...");
+
         Optional<Collaboration> optCollaboration = collaborationRepository
                 .findCollaborationByDeckCorrelationId(correlationId);
-
         if (optCollaboration.isPresent()){
-            logger.debug("Collaboration found.");
             Collaboration collaboration = optCollaboration.get();
-            logger.debug("{}", collaboration);
+            log.debug("Collaboration fetched by DeckCorrelationId: {}", collaboration);
 
             Participant updatedParticipant = collaboration.setDeck(userId, correlationId,
                     new Deck(deckId, null));
-            logger.debug("Deck added to Participant.");
-            logger.debug("{}", updatedParticipant);
+            log.debug("Deck added to participant. Updated Participant: {}", updatedParticipant);
+
             collaborationRepository.updateDeckAddedParticipant(collaboration, updatedParticipant);
-            logger.trace("Saved Participant as 'updateDeckAddedParticipant'.");
-            logger.info("Deck added to Participant.");
+            log.info("Deck successfully added to Participant.");
 
             kafkaProducer.send(new DeckAdded(getTraceIdOrEmptyString(),
                     new DeckAddedDto(optCollaboration.get().getCollaborationId(), userId, deckId)));
 
         } else {
-            logger.trace("Deck does not belong to any active Participant.");
+            log.trace("No Collaboration found for DeckCorrelationId '{}'. " +
+                    "Deck does not belong to any active Participant.", correlationId);
         }
     }
 

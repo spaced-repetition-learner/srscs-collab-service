@@ -24,7 +24,7 @@ public class KafkaDeckCardsEventConsumer {
     @Autowired
     private Tracer tracer;
 
-    private final Logger logger = LoggerFactory.getLogger(KafkaDeckCardsEventConsumer.class);
+    private final Logger log = LoggerFactory.getLogger(KafkaDeckCardsEventConsumer.class);
 
     @Autowired
     public KafkaDeckCardsEventConsumer(CollaborationService collaborationService,
@@ -35,7 +35,6 @@ public class KafkaDeckCardsEventConsumer {
 
     @KafkaListener(topics = {"${kafka.topic.deckscards}"}, id = "${kafka.groupId.deckscards}")
     public void receive(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
-        logger.trace("Receiving Deck-Cards-Event...");
         String eventName = getHeaderValue(event, "type");
         switch (eventName) {
             case "deck-created"     -> processDeckCreatedEvent(event);
@@ -44,7 +43,7 @@ public class KafkaDeckCardsEventConsumer {
             case "card-overridden"  -> processCardOverriddenEvent(event);
             case "card-disabled"    -> processCardDisabledEvent(event);
             default -> {
-                logger.debug("Received event on 'cdc.decks-cards.0' of unknown type '{}'.",
+                log.debug("Received event on 'cdc.decks-cards.0' of unknown type '{}'.",
                         eventName);
                 throw new RuntimeException("Received event on 'cdc.decks-cards.0' of unknown type '" +
                         eventName+"'.");
@@ -56,13 +55,9 @@ public class KafkaDeckCardsEventConsumer {
             throws JsonProcessingException {
         Span newSpan = tracer.nextSpan().name("event-deck-created");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
-
-            DeckCreated deckDisabled = new DeckCreated(collaborationService, event);
-            logger.debug("Received 'DeckCreatedEvent'.");
-            logger.debug("{}", deckDisabled);
-            logger.info("Processing 'DeckCreatedEvent'...");
-            deckDisabled.execute();
-            logger.info("Event processed.");
+            DeckCreated deckCreated = new DeckCreated(collaborationService, event);
+            log.info("Received 'DeckCreatedEvent' {}.", deckCreated);
+            deckCreated.execute();
 
         } finally {
             newSpan.end();
@@ -73,13 +68,9 @@ public class KafkaDeckCardsEventConsumer {
             throws JsonProcessingException {
         Span newSpan = tracer.nextSpan().name("event-deck-disabled");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
-
             DeckDisabled deckDisabled = new DeckDisabled(event);
-            logger.debug("Received 'DeckDisabledEvent'.");
-            logger.debug("{}", deckDisabled);
-            logger.info("Processing 'DeckDisabledEvent'...");
+            log.info("Received 'DeckDisabledEvent' {}.", deckDisabled);
             deckDisabled.execute();
-            logger.info("Event processed.");
 
         } finally {
             newSpan.end();
@@ -90,13 +81,9 @@ public class KafkaDeckCardsEventConsumer {
             throws JsonProcessingException {
         Span newSpan = tracer.nextSpan().name("event-card-created");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
-
             CardCreated cardCreated = new CardCreated(collaborationCardService, event);
-            logger.debug("Received 'CardCreatedEvent'.");
-            logger.debug("{}", cardCreated);
-            logger.info("Processing 'CardCreatedEvent'...");
+            log.info("Received 'CardCreatedEvent' {}.", cardCreated);
             cardCreated.execute();
-            logger.info("Event processed.");
 
         } finally {
             newSpan.end();
@@ -107,13 +94,9 @@ public class KafkaDeckCardsEventConsumer {
             throws JsonProcessingException {
         Span newSpan = tracer.nextSpan().name("event-card-overridden");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
-
             CardOverridden cardOverridden = new CardOverridden(collaborationCardService, event);
-            logger.debug("Received 'CardOverriddenEvent'.");
-            logger.debug("{}", cardOverridden);
-            logger.info("Processing 'CardOverriddenEvent'...");
+            log.info("Received 'CardOverriddenEvent'. {}", cardOverridden);
             cardOverridden.execute();
-            logger.info("Event processed.");
 
         } finally {
             newSpan.end();
@@ -124,13 +107,9 @@ public class KafkaDeckCardsEventConsumer {
             throws JsonProcessingException {
         Span newSpan = tracer.nextSpan().name("event-card-disabled");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
-
             CardDisabled cardDisabled = new CardDisabled(event);
-            logger.debug("Received 'CardOverriddenEven'.");
-            logger.debug("{}", cardDisabled);
-            logger.info("Processing 'CardOverriddenEven'...");
+            log.info("Received 'CardOverriddenEven'. {}", cardDisabled);
             cardDisabled.execute();
-            logger.info("Event processed.");
 
         } finally {
             newSpan.end();

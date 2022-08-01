@@ -29,7 +29,7 @@ public class Collaboration {
     @Nullable
     private Map<UUID, Participant> participants;
 
-    private static final Logger logger = LoggerFactory.getLogger(Collaboration.class);
+    private static final Logger log = LoggerFactory.getLogger(Collaboration.class);
 
     public Collaboration(@NotNull UUID collaborationId) {
         this.collaborationId = collaborationId;
@@ -46,18 +46,19 @@ public class Collaboration {
     public @NotNull Participant inviteParticipant(@NotNull User user)
             throws CollaborationStateException{
         if (getCollaborationStatus() == CollaborationStatus.TERMINATED) {
-            logger.debug("Failed to invite User. Collaboration-Status is {}.",
+            log.debug("Failed to invite User. Collaboration-Status is {}.",
                     getCollaborationStatus());
             throw new CollaborationStateException("Invite failed. " +
                     "Collaboration is already terminated.");
         }
         if (getParticipants().containsKey(user.getUserId())) {
-            logger.debug("Failed to invite User. User already participates.");
-            throw new CollaborationStateException("User is already participating.");
+            log.debug("Failed to invite User. User already participates.");
+            throw new CollaborationStateException("Invite failed. " +
+                    "User is already participating.");
         }
         Participant newParticipant = Participant.createNewParticipant(user);
         participants.put(user.getUserId(), newParticipant);
-        logger.debug("New Participant added: {}", newParticipant);
+        log.debug("New Participant added to Collaboration: {}", newParticipant);
         return newParticipant;
     }
 

@@ -1,6 +1,5 @@
 package de.danielkoellgen.srscscollabservice.domain.collaboration.domain;
 
-import de.danielkoellgen.srscscollabservice.domain.collaboration.application.CollaborationService;
 import de.danielkoellgen.srscscollabservice.domain.deck.domain.Deck;
 import de.danielkoellgen.srscscollabservice.domain.user.domain.User;
 import lombok.AllArgsConstructor;
@@ -32,7 +31,7 @@ public class Participant {
     @NotNull
     private List<State> status;
 
-    private static final Logger logger = LoggerFactory.getLogger(Participant.class);
+    private static final Logger log = LoggerFactory.getLogger(Participant.class);
 
 
     public static @NotNull Participant createNewParticipant(@NotNull User user) {
@@ -42,33 +41,33 @@ public class Participant {
 
     public void acceptParticipation() throws ParticipantStateException {
         if (getCurrentState().status() != ParticipantStatus.INVITED) {
-            logger.debug("Failed to accept the Participation. Status is {} but should be {}.",
+            log.debug("Failed to accept the Participation. Status is {} but should be {}.",
                     getCurrentState().status(), ParticipantStatus.INVITED);
             throw new ParticipantStateException("Accepting a participation whose status is " +
                     getCurrentState().status() + " is not allowed.");
         }
         State newState = new State(ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now());
         status = Stream.concat(status.stream(), Stream.of(newState)).toList();
-        logger.debug("New Accepted-State: {}", newState);
+        log.debug("New Accepted-State: {}", newState);
         deckCorrelationId = UUID.randomUUID();
-        logger.debug("deck-correlation-id is {}", deckCorrelationId);
+        log.debug("deck-correlation-id is {}", deckCorrelationId);
     }
 
     public void endParticipation() throws ParticipantStateException {
         if (getCurrentState().status() == ParticipantStatus.INVITED) {
             State newState = new State(ParticipantStatus.INVITATION_DECLINED, LocalDateTime.now());
             status = Stream.concat(status.stream(), Stream.of(newState)).toList();
-            logger.debug("New State: {}", newState);
+            log.debug("New State: {}", newState);
             return;
         }
         if (getCurrentState().status() == ParticipantStatus.INVITATION_ACCEPTED) {
             State newState = new State(ParticipantStatus.TERMINATED, LocalDateTime.now());
             status = Stream.concat(status.stream(), Stream.of(newState)).toList();
-            logger.debug("New State: {}", newState);
+            log.debug("New State: {}", newState);
             return;
         }
 
-        logger.debug("Failed to end Participation. Status is {}.", getCurrentState().status());
+        log.debug("Failed to end Participation. Status is {}.", getCurrentState().status());
         throw new ParticipantStateException("Ending a participation whose status is " +
                 getCurrentState().status() + " is not allowed.");
     }
@@ -79,7 +78,7 @@ public class Participant {
                     this.deckCorrelationId + ", argument-id is " + deckCorrelationId);
         }
         this.deck = deck;
-        logger.trace("Deck added to Participant.");
+        log.trace("Deck added to Participant.");
     }
 
     public @NotNull State getCurrentState() {

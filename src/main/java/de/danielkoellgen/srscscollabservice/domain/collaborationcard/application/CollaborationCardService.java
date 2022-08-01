@@ -21,7 +21,7 @@ public class CollaborationCardService {
 
     private final CollaborationCardRepository collaborationCardRepository;
 
-    private final Logger logger = LoggerFactory.getLogger(CollaborationCardService.class);
+    private final Logger log = LoggerFactory.getLogger(CollaborationCardService.class);
 
     @Autowired
     public CollaborationCardService(ExternallyCreatedCardService externallyCreatedCardService,
@@ -34,9 +34,9 @@ public class CollaborationCardService {
 
     public void processNewlyExternallyCreatedCard(@Nullable UUID correlationId, @NotNull UUID cardId,
             @NotNull UUID deckId, @NotNull UUID userId) {
-        logger.trace("Processing externally created Card...");
+        log.trace("Processing externally created Card...");
         if (correlationId != null) {
-            logger.debug("With correlation-id {}.", correlationId);
+            log.trace("Correlation-id is '{}'.", correlationId);
             if (updateCorrelationWithCard(correlationId, cardId)) {
                 return;
             }
@@ -47,9 +47,9 @@ public class CollaborationCardService {
     public void processExternallyOverriddenCard(@Nullable UUID correlationId,
             @NotNull UUID parentCardId, @NotNull UUID newCardId, @NotNull UUID deckId,
             @NotNull UUID userId) {
-        logger.trace("Processing externally overriding Card.");
+        log.trace("Processing externally overriding Card.");
         if (correlationId != null) {
-            logger.debug("With correlation-id {}.", correlationId);
+            log.trace("Correlation-id is '{}'.", correlationId);
             if (updateCorrelationWithCard(correlationId, newCardId)) {
                 return;
             }
@@ -59,27 +59,24 @@ public class CollaborationCardService {
     }
 
     private Boolean updateCorrelationWithCard(@NotNull UUID correlationId, @NotNull UUID cardId) {
-        logger.trace("Updating CollaborationsCard's Correlation with Card...");
-        logger.trace("Fetching CollaborationCard by correlation-id {}...", correlationId);
+        log.trace("Updating CollaborationsCard's Correlation with Card...");
+        log.trace("Fetching CollaborationCard by correlation-id {}...", correlationId);
         Optional<CollaborationCard> collaborationCardByCorrelation = collaborationCardRepository
                 .findCollaborationCardWithCorrelation_byCorrelationId(correlationId);
 
         if (collaborationCardByCorrelation.isPresent()) {
-            CollaborationCard partialCollaboration = collaborationCardByCorrelation.get();
-            logger.debug("Matching CollaborationCard fetched.");
-            logger.debug("{}", partialCollaboration);
+            CollaborationCard partialCollaborationCard = collaborationCardByCorrelation.get();
+            log.debug("Partial CollaborationCard is: {}", partialCollaborationCard);
 
-            Correlation updatedCorrelation = partialCollaboration.addCard(correlationId, cardId);
-            logger.debug("Card added to CollaborationCard.");
-            logger.debug("{}", updatedCorrelation);
+            Correlation updatedCorrelation = partialCollaborationCard.addCard(correlationId, cardId);
+            log.debug("Card added to CollaborationCard. Updated Correlation is: {}", updatedCorrelation);
 
-            collaborationCardRepository.saveUpdatedCorrelation(partialCollaboration, updatedCorrelation);
-            logger.trace("Updated CollaborationCard was saved.");
-            logger.info("Correlation updated with Card.");
+            collaborationCardRepository.saveUpdatedCorrelation(partialCollaborationCard, updatedCorrelation);
+            log.info("Correlation successfully updated with Card.");
             return true;
         }
 
-        logger.debug("No matching CollaborationCard was found.");
+        log.debug("No matching CollaborationCard was found for correlation-id '{}'.", correlationId);
         return false;
     }
 }
