@@ -26,8 +26,8 @@ public class CardOverridden extends AbstractConsumerEvent {
     @Override
     public void execute() {
         collaborationCardService.processExternallyOverriddenCard(
-                correlationId, payload.parentCardId(), payload.newCardId(), payload.deckId(), payload.userId()
-        );
+                correlationId, payload.parentCardId(), payload.newCardId(), payload.deckId(),
+                payload.userId());
     }
 
     @Override

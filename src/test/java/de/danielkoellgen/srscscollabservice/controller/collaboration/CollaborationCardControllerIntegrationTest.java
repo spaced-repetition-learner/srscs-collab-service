@@ -5,7 +5,6 @@ import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.Collabo
 import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.ParticipantRequestDto;
 import de.danielkoellgen.srscscollabservice.controller.collaboration.dto.ParticipantResponseDto;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Collaboration;
-import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.Participant;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.domain.ParticipantStatus;
 import de.danielkoellgen.srscscollabservice.domain.collaboration.repository.CollaborationRepository;
 import de.danielkoellgen.srscscollabservice.domain.domainprimitives.Username;
@@ -41,7 +40,9 @@ public class CollaborationCardControllerIntegrationTest {
     @Autowired
     public CollaborationCardControllerIntegrationTest(CollaborationController collaborationController,
             UserService userService, CollaborationRepository collaborationRepository) {
-        this.webTestClientCollaboration = WebTestClient.bindToController(collaborationController).build();
+        this.webTestClientCollaboration = WebTestClient
+                .bindToController(collaborationController)
+                .build();
         this.userService = userService;
         this.collaborationRepository = collaborationRepository;
     }
@@ -70,13 +71,13 @@ public class CollaborationCardControllerIntegrationTest {
         CollaborationRequestDto requestDto = new CollaborationRequestDto(
                 List.of(
                         user1.getUsername().getUsername(),
-                        user2.getUsername().getUsername()
-                ),
-                "anyName"
-        );
+                        user2.getUsername().getUsername()),
+                "anyName");
 
         // when
-        CollaborationResponseDto responseDto = webTestClientCollaboration.post().uri("/collaborations")
+        CollaborationResponseDto responseDto = webTestClientCollaboration
+                .post()
+                .uri("/collaborations")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(requestDto)
@@ -93,7 +94,8 @@ public class CollaborationCardControllerIntegrationTest {
                 .hasSize(2);
 
         // and then
-        ParticipantResponseDto user1 = responseDto.participants().stream()
+        ParticipantResponseDto user1 = responseDto.participants()
+                .stream()
                 .filter(user -> user.userId().equals(this.user1.getUserId()))
                 .toList()
                 .get(0);
@@ -102,19 +104,20 @@ public class CollaborationCardControllerIntegrationTest {
 
         // and then
         Collaboration fetchedCollaboration = collaborationRepository
-                .findCollaborationById(responseDto.collaborationId()).orElseThrow();
+                .findCollaborationById(responseDto.collaborationId())
+                .orElseThrow();
     }
 
     @Test
     public void shouldAllowToFetchCollaborationsById() {
         // given
         CollaborationResponseDto startedCollaboration = externallyStartCollaboration(
-                List.of(user1, user2)
-        );
+                List.of(user1, user2));
         UUID collaborationId = startedCollaboration.collaborationId();
 
         // when
-        CollaborationResponseDto responseDto = webTestClientCollaboration.get()
+        CollaborationResponseDto responseDto = webTestClientCollaboration
+                .get()
                 .uri("/collaborations/"+collaborationId)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
@@ -131,12 +134,12 @@ public class CollaborationCardControllerIntegrationTest {
     public void shouldAllowToFetchCollaborationsByUserId() {
         // given
         CollaborationResponseDto startedCollaboration = externallyStartCollaboration(
-                List.of(user1, user2)
-        );
+                List.of(user1, user2));
         UUID collaborationId = startedCollaboration.collaborationId();
 
         // when
-        List<CollaborationResponseDto> responseDtosByUserId = webTestClientCollaboration.get()
+        List<CollaborationResponseDto> responseDtosByUserId = webTestClientCollaboration
+                .get()
                 .uri("/collaborations?user-id="+user2.getUserId())
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
@@ -146,7 +149,8 @@ public class CollaborationCardControllerIntegrationTest {
         CollaborationResponseDto responseDto = responseDtosByUserId.get(0);
 
         // then
-        CollaborationResponseDto responseDtoById = fetchExternalCollaborationById(responseDto.collaborationId());
+        CollaborationResponseDto responseDtoById = fetchExternalCollaborationById(
+                responseDto.collaborationId());
         assertThat(responseDto)
                 .isEqualTo(responseDtoById);
     }
@@ -155,27 +159,29 @@ public class CollaborationCardControllerIntegrationTest {
     public void shouldAllowToAcceptInvitations() {
         // given
         CollaborationResponseDto startedCollaboration = externallyStartCollaboration(
-                List.of(user1, user2)
-        );
+                List.of(user1, user2));
         UUID collaborationId = startedCollaboration.collaborationId();
         UUID acceptedUserUserId = user1.getUserId();
 
         // when
-        webTestClientCollaboration.post()
-                .uri("/collaborations/"+collaborationId+"/participants/"+acceptedUserUserId+"/state")
+        webTestClientCollaboration
+                .post()
+                .uri("/collaborations/" + collaborationId + "/participants/" +
+                        acceptedUserUserId + "/state")
                 .exchange()
                 .expectStatus().isCreated();
 
         // then
-        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(collaborationId);
-        ParticipantResponseDto user1Dto = fetchedCollaboration.participants().stream()
+        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(
+                collaborationId);
+        ParticipantResponseDto user1Dto = fetchedCollaboration.participants()
+                .stream()
                 .filter(x -> x.userId().equals(acceptedUserUserId))
                 .toList()
                 .get(0);
         assertThat(user1Dto.participantStatus())
                 .isEqualTo(ParticipantStatus.toStringFromEnum(
-                        ParticipantStatus.INVITATION_ACCEPTED
-                ));
+                        ParticipantStatus.INVITATION_ACCEPTED));
     }
 
     @Test
@@ -187,21 +193,23 @@ public class CollaborationCardControllerIntegrationTest {
         UUID declinedUserId = user1.getUserId();
 
         // when
-        webTestClientCollaboration.delete()
-                .uri("/collaborations/"+collaborationId+"/participants/"+declinedUserId+"")
+        webTestClientCollaboration
+                .delete()
+                .uri("/collaborations/" + collaborationId + "/participants/" + declinedUserId)
                 .exchange()
                 .expectStatus().isOk();
 
         // then
-        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(collaborationId);
-        ParticipantResponseDto user1Dto = fetchedCollaboration.participants().stream()
+        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(
+                collaborationId);
+        ParticipantResponseDto user1Dto = fetchedCollaboration.participants()
+                .stream()
                 .filter(x -> x.userId().equals(declinedUserId))
                 .toList()
                 .get(0);
         assertThat(user1Dto.participantStatus())
                 .isEqualTo(ParticipantStatus.toStringFromEnum(
-                        ParticipantStatus.INVITATION_DECLINED
-                ));
+                        ParticipantStatus.INVITATION_DECLINED));
     }
 
     @Test
@@ -211,27 +219,34 @@ public class CollaborationCardControllerIntegrationTest {
                 List.of(user1, user2));
         UUID collaborationId = startedCollaboration.collaborationId();
         UUID acceptedUserUserId = user1.getUserId();
-        webTestClientCollaboration.post()
-                .uri("/collaborations/"+collaborationId+"/participants/"+acceptedUserUserId+"/state")
+        webTestClientCollaboration
+                .post()
+                .uri("/collaborations/" + collaborationId + "/participants/" +
+                        acceptedUserUserId + "/state")
                 .exchange()
-                .expectStatus().isCreated();
+                .expectStatus()
+                .isCreated();
 
         // when
-        webTestClientCollaboration.delete()
-                .uri("/collaborations/"+collaborationId+"/participants/"+acceptedUserUserId+"")
+        webTestClientCollaboration
+                .delete()
+                .uri("/collaborations/" + collaborationId + "/participants/" +
+                        acceptedUserUserId + "")
                 .exchange()
-                .expectStatus().isOk();
+                .expectStatus()
+                .isOk();
 
         // then
-        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(collaborationId);
-        ParticipantResponseDto user1Dto = fetchedCollaboration.participants().stream()
+        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(
+                collaborationId);
+        ParticipantResponseDto user1Dto = fetchedCollaboration.participants()
+                .stream()
                 .filter(x -> x.userId().equals(acceptedUserUserId))
                 .toList()
                 .get(0);
         assertThat(user1Dto.participantStatus())
                 .isEqualTo(ParticipantStatus.toStringFromEnum(
-                        ParticipantStatus.TERMINATED
-                ));
+                        ParticipantStatus.TERMINATED));
     }
 
     @Test
@@ -240,31 +255,35 @@ public class CollaborationCardControllerIntegrationTest {
         CollaborationResponseDto startedCollaboration = externallyStartCollaboration(
                 List.of(user1, user2));
         UUID collaborationId = startedCollaboration.collaborationId();
-        ParticipantRequestDto requestDto = new ParticipantRequestDto(user3.getUsername().getUsername());
+        ParticipantRequestDto requestDto = new ParticipantRequestDto(
+                user3.getUsername().getUsername());
 
         // when
-        ParticipantResponseDto responseDto = webTestClientCollaboration.post()
-                .uri("/collaborations/"+collaborationId+"/participants")
+        ParticipantResponseDto responseDto = webTestClientCollaboration
+                .post()
+                .uri("/collaborations/" + collaborationId + "/participants")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(requestDto)
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBody(ParticipantResponseDto.class)
-                .returnResult().getResponseBody();
+                .returnResult()
+                .getResponseBody();
 
         // then
-        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(collaborationId);
+        CollaborationResponseDto fetchedCollaboration = fetchExternalCollaborationById(
+                collaborationId);
         assertThat(fetchedCollaboration.participants())
                 .hasSize(3);
-        ParticipantResponseDto invitedUserDto = fetchedCollaboration.participants().stream()
+        ParticipantResponseDto invitedUserDto = fetchedCollaboration.participants()
+                .stream()
                 .filter(x -> x.userId().equals(user3.getUserId()))
                 .toList()
                 .get(0);
         assertThat(invitedUserDto.participantStatus())
                 .isEqualTo(ParticipantStatus.toStringFromEnum(
-                        ParticipantStatus.INVITED
-                ));
+                        ParticipantStatus.INVITED));
     }
 
     public @NotNull CollaborationResponseDto externallyStartCollaboration(List<User> users) {
@@ -273,28 +292,33 @@ public class CollaborationCardControllerIntegrationTest {
                 users.stream()
                         .map(x -> x.getUsername().getUsername())
                         .toList(),
-                "anyName"
-        );
-        CollaborationResponseDto responseDto = webTestClientCollaboration.post().uri("/collaborations")
+                "anyName");
+        CollaborationResponseDto responseDto = webTestClientCollaboration
+                .post()
+                .uri("/collaborations")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(requestDto)
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBody(CollaborationResponseDto.class)
-                .returnResult().getResponseBody();
+                .returnResult()
+                .getResponseBody();
         assert responseDto != null;
         return responseDto;
     }
 
-    public @NotNull CollaborationResponseDto fetchExternalCollaborationById(@NotNull UUID collaborationId) {
-        CollaborationResponseDto responseDto = webTestClientCollaboration.get()
-                .uri("/collaborations/"+collaborationId)
+    public @NotNull CollaborationResponseDto fetchExternalCollaborationById(
+            @NotNull UUID collaborationId) {
+        CollaborationResponseDto responseDto = webTestClientCollaboration
+                .get()
+                .uri("/collaborations/" + collaborationId)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(CollaborationResponseDto.class)
-                .returnResult().getResponseBody();
+                .returnResult()
+                .getResponseBody();
         assert responseDto != null;
         return responseDto;
     }

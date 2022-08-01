@@ -16,7 +16,8 @@ public class UserCreated extends AbstractConsumerEvent {
     @Getter
     private final @NotNull UserCreatedDto payload;
 
-    public UserCreated(@NotNull UserService userService, @NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
+    public UserCreated(@NotNull UserService userService, @NotNull ConsumerRecord<String, String> event)
+            throws JsonProcessingException {
         super(event);
         this.userService = userService;
         this.payload = UserCreatedDto.makeFromSerialization(event.value());

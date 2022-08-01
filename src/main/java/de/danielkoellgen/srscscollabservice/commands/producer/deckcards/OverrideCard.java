@@ -18,10 +18,10 @@ public class OverrideCard extends AbstractProducerEvent {
 
     public static final String eventTopic = "cmd.decks-cards.0";
 
-    public OverrideCard(@NotNull String transactionId, @NotNull UUID correlationId, @NotNull OverrideCardDto payloadDto) {
+    public OverrideCard(@NotNull String transactionId, @NotNull UUID correlationId,
+            @NotNull OverrideCardDto payloadDto) {
         super(UUID.randomUUID(), transactionId, correlationId, eventName, eventTopic,
-                EventDateTime.makeFromLocalDateTime(LocalDateTime.now())
-        );
+                EventDateTime.makeFromLocalDateTime(LocalDateTime.now()));
         this.payloadDto = payloadDto;
     }
 

@@ -38,12 +38,14 @@ public class KafkaUserEventConsumer {
             case "user-disabled"    -> processUserDisabledEvent(event);
             default -> {
                 logger.debug("Received event on 'cdc.users.0' of unknown type '{}'.", eventName);
-                throw new RuntimeException("Received event on 'cdc.users.0' of unknown type '"+eventName+"'.");
+                throw new RuntimeException("Received event on 'cdc.users.0' of unknown type '" +
+                        eventName+"'.");
             }
         }
     }
 
-    private void processUserCreatedEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
+    private void processUserCreatedEvent(@NotNull ConsumerRecord<String, String> event)
+            throws JsonProcessingException {
         Span newSpan = tracer.nextSpan().name("event-user-created");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
 
@@ -59,7 +61,8 @@ public class KafkaUserEventConsumer {
         }
     }
 
-    private void processUserDisabledEvent(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
+    private void processUserDisabledEvent(@NotNull ConsumerRecord<String, String> event)
+            throws JsonProcessingException {
         Span newSpan = tracer.nextSpan().name("event-user-disabled");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
 

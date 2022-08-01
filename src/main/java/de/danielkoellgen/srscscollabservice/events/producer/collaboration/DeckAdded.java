@@ -19,8 +19,7 @@ public class DeckAdded extends AbstractProducerEvent {
 
     public DeckAdded(@NotNull String transactionId, @NotNull DeckAddedDto payloadDto) {
         super(UUID.randomUUID(), transactionId, null, eventName, eventTopic,
-                EventDateTime.makeFromLocalDateTime(LocalDateTime.now())
-        );
+                EventDateTime.makeFromLocalDateTime(LocalDateTime.now()));
         this.payloadDto = payloadDto;
     }
 

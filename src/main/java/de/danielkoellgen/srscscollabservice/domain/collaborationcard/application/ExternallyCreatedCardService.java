@@ -41,10 +41,12 @@ public class ExternallyCreatedCardService {
         this.kafkaProducer = kafkaProducer;
     }
 
-    public void createNewCollaborationCard(@NotNull UUID cardId, @NotNull UUID deckId, @NotNull UUID userId) {
+    public void createNewCollaborationCard(@NotNull UUID cardId, @NotNull UUID deckId,
+            @NotNull UUID userId) {
         logger.trace("Creating new CollaborationCard...");
         logger.trace("Fetching Collaboration by deck-id {}...", deckId);
-        Optional<Collaboration> collaborationByDeckId = collaborationRepository.findCollaborationByDeckId(deckId);
+        Optional<Collaboration> collaborationByDeckId = collaborationRepository
+                .findCollaborationByDeckId(deckId);
 
         if (collaborationByDeckId.isPresent()) {
             Collaboration fullCollaboration = collaborationByDeckId.get();
@@ -55,16 +57,19 @@ public class ExternallyCreatedCardService {
                     .createNew(fullCollaboration, cardId, userId, deckId);
             CollaborationCard newCollaborationCard = response.getValue0();
             List<Correlation> newCorrelations = response.getValue1();
-            logger.debug("New CollaborationCard created with {} unmatched correlations.", newCorrelations.size());
+            logger.debug("New CollaborationCard created with {} unmatched correlations.",
+                    newCorrelations.size());
             logger.debug("{}", newCollaborationCard);
 
             collaborationCardRepository.saveNewCollaborationCard(newCollaborationCard);
             logger.trace("New CollaborationCard saved.");
 
             logger.info("New CollaborationCard created for Card.");
-            logger.info("Publishing {} Commands to clone Card into Decks...", newCorrelations.size());
+            logger.info("Publishing {} Commands to clone Card into Decks...",
+                    newCorrelations.size());
             newCorrelations.forEach(x -> kafkaProducer.send(
-                    new CloneCard(getTraceIdOrEmptyString(), x.correlationId(), new CloneCardDto(x.rootCardId(), x.deckId()))
+                    new CloneCard(getTraceIdOrEmptyString(), x.correlationId(),
+                            new CloneCardDto(x.rootCardId(), x.deckId()))
             ));
             return;
         }

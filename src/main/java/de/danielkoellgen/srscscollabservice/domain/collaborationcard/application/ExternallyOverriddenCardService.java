@@ -11,7 +11,6 @@ import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.Coll
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.Correlation;
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.repository.CollaborationCardRepository;
 import de.danielkoellgen.srscscollabservice.events.producer.KafkaProducer;
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -45,25 +44,30 @@ public class ExternallyOverriddenCardService {
         this.kafkaProducer = kafkaProducer;
     }
 
-    public void updateToNewCardVersion(@NotNull UUID parentCardId, @NotNull UUID newCardId, @NotNull UUID deckId, @NotNull UUID userId) {
+    public void updateToNewCardVersion(@NotNull UUID parentCardId, @NotNull UUID newCardId,
+            @NotNull UUID deckId, @NotNull UUID userId) {
         logger.trace("Updating CollaborationCard to a new CardVersion...");
-        logger.trace("Fetching CollaborationCard joined on root-card-id by parent-card-id {}.", parentCardId);
-        Optional<CollaborationCard> collaborationCardJoinedOnRootCardIdByParentCardId = collaborationCardRepository
-                .findCollaborationCardWithCorrelation_byCardIdOnRootCardId(parentCardId);
+        logger.trace("Fetching CollaborationCard joined on root-card-id by parent-card-id {}.",
+                parentCardId);
+        Optional<CollaborationCard> collaborationCardJoinedOnRootCardIdByParentCardId =
+                collaborationCardRepository
+                        .findCollaborationCardWithCorrelation_byCardIdOnRootCardId(parentCardId);
 
         if (collaborationCardJoinedOnRootCardIdByParentCardId.isPresent()) {
-            CollaborationCard fullCollaborationCardOnRootCardId = collaborationCardJoinedOnRootCardIdByParentCardId.get();
+            CollaborationCard fullCollaborationCardOnRootCardId =
+                    collaborationCardJoinedOnRootCardIdByParentCardId.get();
             logger.debug("Matching CollaborationCard fetched.");
             logger.debug("{}", fullCollaborationCardOnRootCardId);
 
-            logger.trace("Fetching Collaboration by id {}...", fullCollaborationCardOnRootCardId.getCollaborationId());
+            logger.trace("Fetching Collaboration by id {}...", fullCollaborationCardOnRootCardId
+                    .getCollaborationId());
             Collaboration collaboration = collaborationRepository
                     .findCollaborationById(fullCollaborationCardOnRootCardId.getCollaborationId()).get();
             logger.debug("{}", collaboration);
 
-            Triplet<List<Correlation>, List<Correlation>, List<Correlation>> response =  fullCollaborationCardOnRootCardId.addNewCardVersion(
-                    collaboration, parentCardId, newCardId, userId, deckId
-            );
+            Triplet<List<Correlation>, List<Correlation>, List<Correlation>> response =
+                    fullCollaborationCardOnRootCardId.addNewCardVersion(
+                            collaboration, parentCardId, newCardId, userId, deckId);
             List<Correlation> overrideCorrelations = response.getValue0();
             List<Correlation> cloneCorrelations = response.getValue1();
             List<Correlation> newCorrelations = response.getValue2();
@@ -71,20 +75,20 @@ public class ExternallyOverriddenCardService {
             logger.debug("{}", fullCollaborationCardOnRootCardId);
 
             //TODO: possible miss of new correlation while saving
-            collaborationCardRepository.saveNewCardVersion(fullCollaborationCardOnRootCardId, newCorrelations);
+            collaborationCardRepository.saveNewCardVersion(fullCollaborationCardOnRootCardId,
+                    newCorrelations);
             logger.trace("Updated CollaborationCard saved.");
             logger.info("New CardVersion added to CollaborationCard for Card.");
             logger.info("Publishing {} Commands to clone Card...", cloneCorrelations.size());
 
             cloneCorrelations.forEach(x -> kafkaProducer.send(
-                    new CloneCard(getTraceIdOrEmptyString(), x.correlationId(), new CloneCardDto(x.rootCardId(),x.deckId()))
-            ));
-            logger.info("Publishing {} Commands to override with Card...", overrideCorrelations.size());
+                    new CloneCard(getTraceIdOrEmptyString(), x.correlationId(),
+                            new CloneCardDto(x.rootCardId(),x.deckId()))));
+            logger.info("Publishing {} Commands to override with Card...",
+                    overrideCorrelations.size());
             overrideCorrelations.forEach(x -> kafkaProducer.send(
-                    new OverrideCard(getTraceIdOrEmptyString(), x.correlationId(), new OverrideCardDto(
-                            x.deckId(), x.parentCardId(), x.rootCardId())
-                    )
-            ));
+                    new OverrideCard(getTraceIdOrEmptyString(), x.correlationId(),
+                            new OverrideCardDto(x.deckId(), x.parentCardId(), x.rootCardId()))));
             return;
         }
 

@@ -1,6 +1,5 @@
 package de.danielkoellgen.srscscollabservice.domain.collaborationcard.repository.map;
 
-import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.CollaborationCard;
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.Correlation;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -53,8 +52,7 @@ public class CorrelationByRootCardId {
                         collaborationId,
                         x.deckId(),
                         x.userId(),
-                        x.cardId()
-                ))
+                        x.cardId()))
                 .toList();
     }
 }

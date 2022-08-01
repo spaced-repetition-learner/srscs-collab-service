@@ -37,17 +37,15 @@ public class Participant {
 
     public static @NotNull Participant createNewParticipant(@NotNull User user) {
         return new Participant(user, null, null, new ArrayList<>(List.of(
-                new State(ParticipantStatus.INVITED, LocalDateTime.now())
-        )));
+                new State(ParticipantStatus.INVITED, LocalDateTime.now()))));
     }
 
     public void acceptParticipation() throws ParticipantStateException {
         if (getCurrentState().status() != ParticipantStatus.INVITED) {
             logger.debug("Failed to accept the Participation. Status is {} but should be {}.",
-                    getCurrentState().status(), ParticipantStatus.INVITED
-            );
-            throw new ParticipantStateException("Accepting a participation whose status is "+getCurrentState().status()+
-                    " is not allowed.");
+                    getCurrentState().status(), ParticipantStatus.INVITED);
+            throw new ParticipantStateException("Accepting a participation whose status is " +
+                    getCurrentState().status() + " is not allowed.");
         }
         State newState = new State(ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now());
         status = Stream.concat(status.stream(), Stream.of(newState)).toList();
@@ -71,16 +69,14 @@ public class Participant {
         }
 
         logger.debug("Failed to end Participation. Status is {}.", getCurrentState().status());
-        throw new ParticipantStateException("Ending a participation whose status is "+getCurrentState().status()+
-                " is not allowed.");
+        throw new ParticipantStateException("Ending a participation whose status is " +
+                getCurrentState().status() + " is not allowed.");
     }
 
     public void setDeck(@NotNull UUID deckCorrelationId, @NotNull Deck deck) {
         if (!this.deckCorrelationId.equals(deckCorrelationId)) {
             throw new IllegalArgumentException("Deck does not match deckCorrelationId. Current id is " +
-                    this.deckCorrelationId +
-                    ", argument-id is "+deckCorrelationId
-            );
+                    this.deckCorrelationId + ", argument-id is " + deckCorrelationId);
         }
         this.deck = deck;
         logger.trace("Deck added to Participant.");

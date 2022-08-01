@@ -64,19 +64,26 @@ public class CollaborationByIdMap{
                 participant.getUserId(),
                 collaboration.getName().getName(),
                 participant.getUser().getUsername().getUsername(),
-                (participant.getDeck() != null ? participant.getDeck().getDeckId() : null),
-                (participant.getDeckCorrelationId() != null ? participant.getDeckCorrelationId() : null),
-                participant.getStatus().stream().map(ParticipantStateMap::new).toList()
+                (participant.getDeck() != null
+                        ? participant.getDeck().getDeckId() : null),
+                (participant.getDeckCorrelationId() != null
+                        ? participant.getDeckCorrelationId() : null),
+                participant.getStatus().stream()
+                        .map(ParticipantStateMap::new)
+                        .toList()
         );
     }
 
-    public static @NotNull Collaboration mapToEntityFromDatabase(@NotNull List<CollaborationByIdMap> mappedParticipants) {
+    public static @NotNull Collaboration mapToEntityFromDatabase(
+            @NotNull List<CollaborationByIdMap> mappedParticipants) {
         List<Participant> participants = new ArrayList<>();
 
         try {
             for (CollaborationByIdMap mappedParticipant : mappedParticipants) {
-                User user = new User(mappedParticipant.participantUserId, new Username(mappedParticipant.participantUsername), null);
-                Deck deck = mappedParticipant.participantDeckId != null ? new Deck(mappedParticipant.participantDeckId, user) : null;
+                User user = new User(mappedParticipant.participantUserId,
+                        new Username(mappedParticipant.participantUsername), null);
+                Deck deck = mappedParticipant.participantDeckId != null
+                        ? new Deck(mappedParticipant.participantDeckId, user) : null;
                 Participant participant = new Participant(
                         user,
                         deck,
@@ -85,13 +92,15 @@ public class CollaborationByIdMap{
                                 .map(ParticipantStateMap::mapToEntityFromDatabase).toList());
                 participants.add(participant);
             }
-            return new Collaboration(
-                    mappedParticipants.get(0).collaborationId,
+            return new Collaboration(mappedParticipants.get(0).collaborationId,
                     new DeckName(mappedParticipants.get(0).collaborationName),
-                    participants.stream().collect(Collectors.toMap(Participant::getUserId, participant -> participant))
+                    participants.stream()
+                            .collect(Collectors.toMap(Participant::getUserId,
+                                    participant -> participant))
             );
         } catch (Exception e) {
-            throw new IllegalRepositoryMappingException("Failed mapping between entity and database. " + e.getMessage());
+            throw new IllegalRepositoryMappingException("Failed mapping between entity and database. "
+                    + e.getMessage());
         }
     }
 }

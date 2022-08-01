@@ -35,8 +35,9 @@ public class KafkaUserEventConsumerIntegrationTest {
     private Username username;
 
     @Autowired
-    public KafkaUserEventConsumerIntegrationTest(KafkaUserEventConsumer kafkaUserEventConsumer, UserService userService,
-            ProducerEventToConsumerRecordConverter mapToConsumerRecordConverter, UserRepository userRepository) {
+    public KafkaUserEventConsumerIntegrationTest(KafkaUserEventConsumer kafkaUserEventConsumer,
+            UserService userService, ProducerEventToConsumerRecordConverter mapToConsumerRecordConverter,
+            UserRepository userRepository) {
         this.kafkaUserEventConsumer = kafkaUserEventConsumer;
         this.userService = userService;
         this.mapToConsumerRecordConverter = mapToConsumerRecordConverter;
@@ -58,13 +59,10 @@ public class KafkaUserEventConsumerIntegrationTest {
     public void shouldCreateUserWhenReceivingUserCreatedEvent() throws Exception {
         // given
         UserCreatedProd userCreatedProd = new UserCreatedProd(
-                "", new UserCreatedDto(userId, username.getUsername())
-        );
+                "", new UserCreatedDto(userId, username.getUsername()));
 
         // when
-        kafkaUserEventConsumer.receive(
-                mapToConsumerRecordConverter.convert(userCreatedProd)
-        );
+        kafkaUserEventConsumer.receive(mapToConsumerRecordConverter.convert(userCreatedProd));
 
         // then
         User fetchedUser = userRepository.findUserByUserId(userId).orElseThrow();
@@ -81,7 +79,8 @@ public class KafkaUserEventConsumerIntegrationTest {
     public void shouldDisableUserWhenReceivingUserDisabledEvent() throws Exception {
         // given
         userService.addExternallyCreatedUser(userId, username);
-        UserDisabledProd userDisabledProd = new UserDisabledProd("", new UserDisabledDto(userId));
+        UserDisabledProd userDisabledProd = new UserDisabledProd(
+                "", new UserDisabledDto(userId));
 
         // when
         kafkaUserEventConsumer.receive(mapToConsumerRecordConverter.convert(userDisabledProd));

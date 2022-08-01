@@ -12,11 +12,15 @@ public interface CollaborationCardRepository {
 
     void saveNewCollaborationCard(@NotNull CollaborationCard collaborationCard);
 
-    void saveUpdatedCorrelation(@NotNull CollaborationCard collaborationCard, @NotNull Correlation correlation);
+    void saveUpdatedCorrelation(@NotNull CollaborationCard collaborationCard,
+            @NotNull Correlation correlation);
 
-    void saveNewCardVersion(@NotNull CollaborationCard collaborationCard, @NotNull List<Correlation> newCorrelations);
+    void saveNewCardVersion(@NotNull CollaborationCard collaborationCard,
+            @NotNull List<Correlation> newCorrelations);
 
-    Optional<CollaborationCard> findCollaborationCardWithCorrelation_byCorrelationId(@NotNull UUID correlationId);
+    Optional<CollaborationCard> findCollaborationCardWithCorrelation_byCorrelationId(
+            @NotNull UUID correlationId);
 
-    Optional<CollaborationCard> findCollaborationCardWithCorrelation_byCardIdOnRootCardId(@NotNull UUID cardId);
+    Optional<CollaborationCard> findCollaborationCardWithCorrelation_byCardIdOnRootCardId(
+            @NotNull UUID cardId);
 }

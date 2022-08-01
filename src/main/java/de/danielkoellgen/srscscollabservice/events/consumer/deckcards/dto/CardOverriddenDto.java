@@ -17,7 +17,8 @@ public record CardOverriddenDto(
     @NotNull UUID userId
 
 ) {
-    public static @NotNull CardOverriddenDto makeFromSerialization(@NotNull String serialized) throws JsonProcessingException {
+    public static @NotNull CardOverriddenDto makeFromSerialization(@NotNull String serialized)
+            throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
         return mapper.readValue(serialized, CardOverriddenDto.class);
     }

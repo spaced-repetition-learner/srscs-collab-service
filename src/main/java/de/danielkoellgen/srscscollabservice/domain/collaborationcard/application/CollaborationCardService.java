@@ -44,8 +44,9 @@ public class CollaborationCardService {
         externallyCreatedCardService.createNewCollaborationCard(cardId, deckId, userId);
     }
 
-    public void processExternallyOverriddenCard(@Nullable UUID correlationId, @NotNull UUID parentCardId,
-            @NotNull UUID newCardId, @NotNull UUID deckId, @NotNull UUID userId) {
+    public void processExternallyOverriddenCard(@Nullable UUID correlationId,
+            @NotNull UUID parentCardId, @NotNull UUID newCardId, @NotNull UUID deckId,
+            @NotNull UUID userId) {
         logger.trace("Processing externally overriding Card.");
         if (correlationId != null) {
             logger.debug("With correlation-id {}.", correlationId);
@@ -53,7 +54,8 @@ public class CollaborationCardService {
                 return;
             }
         }
-        externallyOverriddenCardService.updateToNewCardVersion(parentCardId, newCardId, deckId, userId);
+        externallyOverriddenCardService.updateToNewCardVersion(parentCardId, newCardId, deckId,
+                userId);
     }
 
     private Boolean updateCorrelationWithCard(@NotNull UUID correlationId, @NotNull UUID cardId) {

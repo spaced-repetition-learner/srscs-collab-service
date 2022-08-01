@@ -26,8 +26,7 @@ public class CardCreated extends AbstractConsumerEvent {
     @Override
     public void execute() {
         collaborationCardService.processNewlyExternallyCreatedCard(
-                correlationId, payload.cardId(), payload.deckId(), payload.userId()
-        );
+                correlationId, payload.cardId(), payload.deckId(), payload.userId());
     }
 
     @Override

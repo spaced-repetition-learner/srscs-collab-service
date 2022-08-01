@@ -47,8 +47,7 @@ public class KafkaConsumerIntegrationTest {
     public void shouldConsumeLiveEvent() throws Exception {
         // given
         UserCreatedProd userCreated = new UserCreatedProd("", new UserCreatedDto(
-                userId, username.getUsername()
-        ));
+                userId, username.getUsername()));
 
         // when
         kafkaProducer.send(userCreated);

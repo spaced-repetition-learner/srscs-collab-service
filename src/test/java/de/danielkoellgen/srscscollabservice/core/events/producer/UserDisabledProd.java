@@ -19,8 +19,7 @@ public class UserDisabledProd extends AbstractProducerEvent {
 
     public UserDisabledProd(@NotNull String transactionId, @NotNull UserDisabledDto payloadDto) {
         super(UUID.randomUUID(), transactionId, null, eventName, eventTopic,
-                EventDateTime.makeFromLocalDateTime(LocalDateTime.now())
-        );
+                EventDateTime.makeFromLocalDateTime(LocalDateTime.now()));
         this.payloadDto = payloadDto;
     }
 

@@ -22,24 +22,29 @@ public record Correlation (
         @Nullable UUID parentCardId
 ) {
     public Correlation(@NotNull CorrelationByRootCardId map) {
-        this(map.getRootCardId(), map.getCorrelationId(), map.getUserId(), map.getDeckId(), map.getCardId(), null);
+        this(map.getRootCardId(), map.getCorrelationId(), map.getUserId(), map.getDeckId(),
+                map.getCardId(), null);
     }
 
-    public static @NotNull Correlation makeNew(@NotNull UUID rootCardId, @NotNull UUID userId, @NotNull UUID deckId) {
-        return new Correlation(rootCardId, UUID.randomUUID(), userId, deckId, null, null);
+    public static @NotNull Correlation makeNew(@NotNull UUID rootCardId, @NotNull UUID userId,
+            @NotNull UUID deckId) {
+        return new Correlation(rootCardId, UUID.randomUUID(), userId, deckId, null,
+                null);
     }
 
-    public static @NotNull Correlation makeNewAsOverride(@NotNull UUID rootCardId, @NotNull UUID userId,
-            @NotNull UUID deckId, @NotNull UUID parentCardId) {
-        return new Correlation(rootCardId, UUID.randomUUID(), userId, deckId, null, parentCardId);
+    public static @NotNull Correlation makeNewAsOverride(@NotNull UUID rootCardId,
+            @NotNull UUID userId, @NotNull UUID deckId, @NotNull UUID parentCardId) {
+        return new Correlation(rootCardId, UUID.randomUUID(), userId, deckId, null,
+                parentCardId);
     }
 
-    public static @NotNull Correlation makeNewWithCard(@NotNull UUID userId, @NotNull UUID deckId, @NotNull UUID cardId) {
+    public static @NotNull Correlation makeNewWithCard(@NotNull UUID userId,
+            @NotNull UUID deckId, @NotNull UUID cardId) {
         return new Correlation(cardId, UUID.randomUUID(), userId, deckId, cardId, null);
     }
 
-    public static @NotNull Correlation makeNewAsOverrideWithCard(@NotNull UUID userId, @NotNull UUID deckId,
-            @NotNull UUID cardId, @NotNull UUID parentCardId) {
+    public static @NotNull Correlation makeNewAsOverrideWithCard(@NotNull UUID userId,
+            @NotNull UUID deckId, @NotNull UUID cardId, @NotNull UUID parentCardId) {
         return new Correlation(cardId, UUID.randomUUID(), userId, deckId, cardId, parentCardId);
     }
 

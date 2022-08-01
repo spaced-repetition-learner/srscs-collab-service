@@ -9,17 +9,21 @@ import org.springframework.stereotype.Component;
 
 @Component
 @WritingConverter
-public class ProducerEventToConsumerRecordConverter implements Converter<ProducerEvent, ConsumerRecord<String, String>> {
+public class ProducerEventToConsumerRecordConverter implements
+        Converter<ProducerEvent, ConsumerRecord<String, String>> {
 
     @Override
     public ConsumerRecord<String, String> convert(ProducerEvent event) {
         ConsumerRecord<String, String> record = new ConsumerRecord<>(
-                event.getTopic(), 1, 1L, "", event.getSerializedContent()
-        );
-        record.headers().add(new RecordHeader("eventId", event.getEventId().toString().getBytes()));
-        record.headers().add(new RecordHeader("transactionId", event.getTransactionId().toString().getBytes()));
-        record.headers().add(new RecordHeader("timestamp", event.getOccurredAt().getFormatted().getBytes()));
-        record.headers().add(new RecordHeader("type", event.getEventName().getBytes()));
+                event.getTopic(), 1, 1L, "", event.getSerializedContent());
+        record.headers().add(
+                new RecordHeader("eventId", event.getEventId().toString().getBytes()));
+        record.headers().add(
+                new RecordHeader("transactionId", event.getTransactionId().toString().getBytes()));
+        record.headers().add(
+                new RecordHeader("timestamp", event.getOccurredAt().getFormatted().getBytes()));
+        record.headers().add(
+                new RecordHeader("type", event.getEventName().getBytes()));
         return record;
     }
 }

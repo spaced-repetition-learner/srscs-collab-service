@@ -16,7 +16,8 @@ public class UserDisabled extends AbstractConsumerEvent {
     @Getter
     private final @NotNull UserDisabledDto payload;
 
-    public UserDisabled(@NotNull UserService userService, @NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
+    public UserDisabled(@NotNull UserService userService, @NotNull ConsumerRecord<String, String> event)
+            throws JsonProcessingException {
         super(event);
         this.userService = userService;
         this.payload = UserDisabledDto.makeFromSerialization(event.value());

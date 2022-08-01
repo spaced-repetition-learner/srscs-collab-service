@@ -22,10 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class CollaborationService {
@@ -41,8 +38,8 @@ public class CollaborationService {
     private final Logger logger = LoggerFactory.getLogger(CollaborationService.class);
 
     @Autowired
-    public CollaborationService(CollaborationRepository collaborationRepository, UserRepository userRepository,
-            KafkaProducer kafkaProducer) {
+    public CollaborationService(CollaborationRepository collaborationRepository,
+            UserRepository userRepository, KafkaProducer kafkaProducer) {
         this.collaborationRepository = collaborationRepository;
         this.userRepository = userRepository;
         this.kafkaProducer = kafkaProducer;
@@ -58,12 +55,14 @@ public class CollaborationService {
         logger.debug("{} / {} Users fetched.", usernames.size(), invitedUsers.size());
         logger.debug("{}", invitedUsers);
 
-        Collaboration collaboration = Collaboration.startNewCollaboration(collaborationName, invitedUsers);
+        Collaboration collaboration = Collaboration.startNewCollaboration(collaborationName,
+                invitedUsers);
         logger.debug("{}", collaboration);
 
         collaborationRepository.saveNewCollaboration(collaboration);
         logger.trace("New Collaboration '{}' saved.", collaboration.getName().getName());
-        logger.info("New Collaboration '{}' started with {} invited User(s).", collaborationName.getName(), invitedUsers.size());
+        logger.info("New Collaboration '{}' started with {} invited User(s).",
+                collaborationName.getName(), invitedUsers.size());
         return collaboration;
     }
 
@@ -83,7 +82,8 @@ public class CollaborationService {
 
         collaborationRepository.saveNewParticipant(collaboration, newParticipant);
         logger.trace("Participant saved as 'saveNewParticipant'.");
-        logger.info("User '{}' invited to participante in Collaboration '{}'.", username.getUsername(), collaboration.getName().getName());
+        logger.info("User '{}' invited to participante in Collaboration '{}'.",
+                username.getUsername(), collaboration.getName().getName());
         return newParticipant;
     }
 
@@ -107,9 +107,7 @@ public class CollaborationService {
         logger.info("Sending CreateDeck Command to create a new Deck.");
         kafkaProducer.send(new CreateDeck(
                 getTraceIdOrEmptyString(), updatedParticipant.getDeckCorrelationId(), new CreateDeckDto(
-                        userId, collaboration.getName().getName())
-                )
-        );
+                        userId, collaboration.getName().getName())));
     }
 
     public void endParticipation(@NotNull UUID collaborationId, @NotNull UUID userId) throws
@@ -125,21 +123,24 @@ public class CollaborationService {
         collaborationRepository.updateTerminatedParticipant(collaboration, updatedParticipant);
         logger.trace("Saved Participant as 'updateTerminatedParticipant'.");
         logger.info("User '{}' ended his participation in '{}'.",
-                updatedParticipant.getUser().getUsername().getUsername(), collaboration.getName().getName()
-        );
+                updatedParticipant.getUser().getUsername().getUsername(),
+                collaboration.getName().getName());
     }
 
-    public void addCorrespondingDeckToParticipant(@NotNull UUID correlationId, @NotNull UUID deckId, @NotNull UUID userId) {
+    public void addCorrespondingDeckToParticipant(@NotNull UUID correlationId, @NotNull UUID deckId,
+            @NotNull UUID userId) {
         logger.trace("Adding corresponding Deck to Participant...");
         logger.trace("Fetching Collaboration by correlation-id {}.", correlationId);
-        Optional<Collaboration> optCollaboration = collaborationRepository.findCollaborationByDeckCorrelationId(correlationId);
+        Optional<Collaboration> optCollaboration = collaborationRepository
+                .findCollaborationByDeckCorrelationId(correlationId);
 
         if (optCollaboration.isPresent()){
             logger.debug("Collaboration found.");
             Collaboration collaboration = optCollaboration.get();
             logger.debug("{}", collaboration);
 
-            Participant updatedParticipant = collaboration.setDeck(userId, correlationId, new Deck(deckId, null));
+            Participant updatedParticipant = collaboration.setDeck(userId, correlationId,
+                    new Deck(deckId, null));
             logger.debug("Deck added to Participant.");
             logger.debug("{}", updatedParticipant);
             collaborationRepository.updateDeckAddedParticipant(collaboration, updatedParticipant);
@@ -147,8 +148,7 @@ public class CollaborationService {
             logger.info("Deck added to Participant.");
 
             kafkaProducer.send(new DeckAdded(getTraceIdOrEmptyString(),
-                    new DeckAddedDto(optCollaboration.get().getCollaborationId(), userId, deckId))
-            );
+                    new DeckAddedDto(optCollaboration.get().getCollaborationId(), userId, deckId)));
 
         } else {
             logger.trace("Deck does not belong to any active Participant.");

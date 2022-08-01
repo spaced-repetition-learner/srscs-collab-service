@@ -26,8 +26,8 @@ public class EventDateTime {
     }
 
     public static @NotNull EventDateTime makeFromFormattedString(@NotNull String dateTimeFormatted) {
-        return new EventDateTime(
-                LocalDateTime.parse(dateTimeFormatted, DateTimeFormatter.ofPattern(pattern_RFC3339)));
+        return new EventDateTime(LocalDateTime.parse(dateTimeFormatted,
+                DateTimeFormatter.ofPattern(pattern_RFC3339)));
     }
 
     public @NotNull String getFormatted() {

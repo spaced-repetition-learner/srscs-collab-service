@@ -11,7 +11,8 @@ public record UserDisabledDto(
     @NotNull UUID userId
 
 ) {
-    public static @NotNull UserDisabledDto makeFromSerialization(@NotNull String serialized) throws JsonProcessingException {
+    public static @NotNull UserDisabledDto makeFromSerialization(@NotNull String serialized)
+            throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
         return mapper.readValue(serialized, UserDisabledDto.class);
     }

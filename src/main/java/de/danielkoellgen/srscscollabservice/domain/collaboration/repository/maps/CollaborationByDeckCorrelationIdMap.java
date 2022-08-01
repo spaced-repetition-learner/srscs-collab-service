@@ -26,11 +26,9 @@ public class CollaborationByDeckCorrelationIdMap {
     private UUID collaborationId;
 
 
-    public static @NotNull CollaborationByDeckCorrelationIdMap mapFromEntity(@NotNull Collaboration collaboration,
-            @NotNull Participant participant) {
-        return new CollaborationByDeckCorrelationIdMap(
-                participant.getDeckCorrelationId(),
-                collaboration.getCollaborationId()
-        );
+    public static @NotNull CollaborationByDeckCorrelationIdMap mapFromEntity(
+            @NotNull Collaboration collaboration, @NotNull Participant participant) {
+        return new CollaborationByDeckCorrelationIdMap(participant.getDeckCorrelationId(),
+                collaboration.getCollaborationId());
     }
 }

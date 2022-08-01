@@ -44,20 +44,28 @@ public class CollaborationByDeckIdMap {
             @NotNull Collaboration collaboration) {
         return collaboration.getParticipants().values().stream()
                 .map(x -> new CollaborationByDeckIdMap(
-                        deckId, collaboration.getCollaborationId(), x.getUserId(),
-                        (x.getDeck() != null ? x.getDeck().getDeckId() : null),
-                        x.getStatus().stream().map(ParticipantStateMap::new).toList()
-                ))
+                        deckId,
+                        collaboration.getCollaborationId(),
+                        x.getUserId(),
+                        (x.getDeck() != null
+                                ? x.getDeck().getDeckId() : null),
+                        x.getStatus().stream()
+                                .map(ParticipantStateMap::new)
+                                .toList()))
                 .toList();
     }
 
     public static @NotNull CollaborationByDeckIdMap mapFromEntity(@NotNull UUID deckId,
             @NotNull Collaboration collaboration, @NotNull Participant participant) {
         return new CollaborationByDeckIdMap(
-                deckId, collaboration.getCollaborationId(), participant.getUserId(),
-                (participant.getDeck() != null ? participant.getDeck().getDeckId() : null),
-                participant.getStatus().stream().map(ParticipantStateMap::new).toList()
-        );
+                deckId,
+                collaboration.getCollaborationId(),
+                participant.getUserId(),
+                (participant.getDeck() != null
+                        ? participant.getDeck().getDeckId() : null),
+                participant.getStatus().stream()
+                        .map(ParticipantStateMap::new)
+                        .toList());
     }
 
     public static @NotNull Collaboration mapToEntityFromDatabase(
@@ -66,7 +74,8 @@ public class CollaborationByDeckIdMap {
         Map<UUID, Participant> participants = mappedParticipants.stream()
                 .map(x -> {
                     User user = new User(x.participantUserId, null, null);
-                    Deck deck = x.participantDeckId != null ? new Deck(x.participantDeckId, user) : null;
+                    Deck deck = x.participantDeckId != null
+                            ? new Deck(x.participantDeckId, user) : null;
                     return new Participant(
                             user,
                             deck,

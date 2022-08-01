@@ -15,7 +15,8 @@ public record UserCreatedDto(
     @NotNull String username
 
 ) {
-    public static @NotNull UserCreatedDto makeFromSerialization(@NotNull String serialized) throws JsonProcessingException {
+    public static @NotNull UserCreatedDto makeFromSerialization(@NotNull String serialized)
+            throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
         return mapper.readValue(serialized, UserCreatedDto.class);
     }

@@ -29,7 +29,8 @@ public class KafkaDeckCardsEventConsumerIntegrationTest {
     private User user3;
 
     @Autowired
-    public KafkaDeckCardsEventConsumerIntegrationTest(UserService userService, CollaborationService collaborationService,
+    public KafkaDeckCardsEventConsumerIntegrationTest(UserService userService,
+            CollaborationService collaborationService,
             KafkaDeckCardsEventConsumer kafkaDeckCardsEventConsumer) {
         this.userService = userService;
         this.collaborationService = collaborationService;
@@ -39,14 +40,11 @@ public class KafkaDeckCardsEventConsumerIntegrationTest {
     @BeforeEach
     public void setUp() throws Exception {
         user1 = userService.addExternallyCreatedUser(
-                UUID.randomUUID(), new Username("dadepu")
-        );
+                UUID.randomUUID(), new Username("dadepu"));
         user2 = userService.addExternallyCreatedUser(
-                UUID.randomUUID(), new Username("melsienna")
-        );
+                UUID.randomUUID(), new Username("melsienna"));
         user3 = userService.addExternallyCreatedUser(
-                UUID.randomUUID(), new Username("sarahve")
-        );
+                UUID.randomUUID(), new Username("sarahve"));
     }
 
     @AfterEach
@@ -57,13 +55,13 @@ public class KafkaDeckCardsEventConsumerIntegrationTest {
     @Test
     public void shouldAddDeckWhenReceivingDeckCreatedEventMatchingCorrelation() throws Exception {
         // given
-        Collaboration collaboration = collaborationService.startNewCollaboration(
-                new DeckName("anyName"), List.of(user1.getUsername(), user2.getUsername())
-        );
+        Collaboration collaboration = collaborationService
+                .startNewCollaboration(
+                        new DeckName("anyName"),
+                        List.of(user1.getUsername(), user2.getUsername()));
         UUID invitationAcceptedId = UUID.randomUUID();
-        collaborationService.acceptParticipation(
-                collaboration.getCollaborationId(), user2.getUserId()
-        );
+        collaborationService.acceptParticipation(collaboration.getCollaborationId(),
+                user2.getUserId());
 
         // when
 

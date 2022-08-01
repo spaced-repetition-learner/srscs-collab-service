@@ -24,7 +24,8 @@ public enum ParticipantStatus {
             case 1 -> INVITATION_ACCEPTED;
             case 2 -> INVITATION_DECLINED;
             case 3 -> TERMINATED;
-            default -> throw new IllegalMappingException("Failed to map ParticipantStatus. Number is [" + number + "].");
+            default -> throw new IllegalMappingException("Failed to map ParticipantStatus. " +
+                    "Number is [" + number + "].");
         };
     }
 

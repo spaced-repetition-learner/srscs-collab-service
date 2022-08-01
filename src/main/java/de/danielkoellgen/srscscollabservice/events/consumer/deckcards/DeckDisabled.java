@@ -13,7 +13,8 @@ public class DeckDisabled extends AbstractConsumerEvent {
     @Getter
     private final @NotNull DeckDisabledDto payload;
 
-    public DeckDisabled(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
+    public DeckDisabled(@NotNull ConsumerRecord<String, String> event)
+            throws JsonProcessingException {
         super(event);
         this.payload = DeckDisabledDto.makeFromSerialization(event.value());
     }

@@ -18,10 +18,10 @@ public class CloneCard extends AbstractProducerEvent {
 
     public static final String eventTopic = "cmd.decks-cards.0";
 
-    public CloneCard(@NotNull String transactionId, @NotNull UUID correlationId, @NotNull CloneCardDto payloadDto) {
+    public CloneCard(@NotNull String transactionId, @NotNull UUID correlationId,
+            @NotNull CloneCardDto payloadDto) {
         super(UUID.randomUUID(), transactionId, correlationId, eventName, eventTopic,
-                EventDateTime.makeFromLocalDateTime(LocalDateTime.now())
-        );
+                EventDateTime.makeFromLocalDateTime(LocalDateTime.now()));
         this.payloadDto = payloadDto;
     }
 

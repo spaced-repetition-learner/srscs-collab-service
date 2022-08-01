@@ -24,15 +24,20 @@ public class KafkaProducer {
         logger.debug("Publishing {} event to {}...", event.getEventName(), event.getTopic());
         logger.debug("{}", event);
 
-        ProducerRecord<String, String> record = new ProducerRecord<>(event.getTopic(), event.getSerializedContent());
-        record.headers().add(new RecordHeader("eventId", event.getEventId().toString().getBytes()));
-        record.headers().add(new RecordHeader("transactionId", event.getTransactionId().toString().getBytes()));
+        ProducerRecord<String, String> record = new ProducerRecord<>(event.getTopic(),
+                event.getSerializedContent());
+        record.headers().add(new RecordHeader("eventId",
+                event.getEventId().toString().getBytes()));
+        record.headers().add(new RecordHeader("transactionId",
+                event.getTransactionId().toString().getBytes()));
         if (event.getCorrelationId() != null) {
-            record.headers().add(new RecordHeader("correlationId", event.getCorrelationId().toString().getBytes()));
+            record.headers().add(new RecordHeader("correlationId",
+                    event.getCorrelationId().toString().getBytes()));
         }
-        record.headers().add(new RecordHeader("timestamp", event.getOccurredAt().getFormatted().getBytes()));
-        record.headers().add(new RecordHeader("type", event.getEventName().getBytes()));
-
+        record.headers().add(new RecordHeader("timestamp",
+                event.getOccurredAt().getFormatted().getBytes()));
+        record.headers().add(new RecordHeader("type",
+                event.getEventName().getBytes()));
         kafkaTemplate.send(record);
         logger.trace("{} published.", event.getEventName());
     }

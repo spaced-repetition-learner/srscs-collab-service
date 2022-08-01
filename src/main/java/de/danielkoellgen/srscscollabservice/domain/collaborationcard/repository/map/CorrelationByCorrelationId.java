@@ -25,7 +25,8 @@ public class CorrelationByCorrelationId {
     @Column(value = "root_card_id")
     private @NotNull UUID rootCardId;
 
-    public static @NotNull List<CorrelationByCorrelationId> mapFromEntity(@NotNull List<Correlation> correlations) {
+    public static @NotNull List<CorrelationByCorrelationId> mapFromEntity(
+            @NotNull List<Correlation> correlations) {
         return correlations.stream()
                 .map(x -> new CorrelationByCorrelationId(x.correlationId(), x.rootCardId()))
                 .toList();

@@ -39,7 +39,8 @@ public class CollaborationController {
         this.collaborationRepository = collaborationRepository;
     }
 
-    @PostMapping(value = "/collaborations", consumes = {"application/json"}, produces = {"application/json"})
+    @PostMapping(value = "/collaborations", consumes = {"application/json"},
+            produces = {"application/json"})
     @NewSpan("controller-start-new-collaboration")
     public ResponseEntity<CollaborationResponseDto> startNewCollaboration(
             @RequestBody CollaborationRequestDto requestDto) {
@@ -50,8 +51,7 @@ public class CollaborationController {
         try {
             startedCollaboration = collaborationService.startNewCollaboration(
                     requestDto.getMappedCollaborationName(),
-                    requestDto.getMappedInvitedUsers()
-            );
+                    requestDto.getMappedInvitedUsers());
             CollaborationResponseDto responseDto = new CollaborationResponseDto(startedCollaboration);
             logger.trace("Responding 201.");
             logger.debug("{}", responseDto);
@@ -64,19 +64,20 @@ public class CollaborationController {
         }
     }
 
-    @PostMapping(value = "/collaborations/{collaboration-id}/participants", consumes = {"application/json"},
-            produces = {"application/json"})
+    @PostMapping(value = "/collaborations/{collaboration-id}/participants",
+            consumes = {"application/json"}, produces = {"application/json"})
     @NewSpan("controller-invite-user-to-collaboration")
     public ResponseEntity<ParticipantResponseDto> inviteUserToCollaboration(
-            @PathVariable("collaboration-id") UUID collaborationId, @RequestBody ParticipantRequestDto requestDto) {
-        logger.debug("POST /collaborations/{}/participants: Invite User to participate.", collaborationId);
+            @PathVariable("collaboration-id") UUID collaborationId,
+            @RequestBody ParticipantRequestDto requestDto) {
+        logger.debug("POST /collaborations/{}/participants: Invite User to participate.",
+                collaborationId);
         logger.debug("{}", requestDto);
 
         Participant newParticipant;
         try {
             newParticipant = collaborationService.inviteUserToCollaboration(
-                    collaborationId, requestDto.getMappedUsername()
-            );
+                    collaborationId, requestDto.getMappedUsername());
             ParticipantResponseDto responseDto = new ParticipantResponseDto(newParticipant);
             logger.trace("Responding 201.");
             logger.debug("{}", responseDto);
@@ -98,7 +99,8 @@ public class CollaborationController {
     @NewSpan("controller-accept-participation")
     public ResponseEntity<?> acceptParticipation(@PathVariable("collaboration-id") UUID collaborationId,
             @PathVariable("user-id") UUID userId) {
-        logger.debug("POST /collaborations/{}/participants/{}/state: Accept Participation.", collaborationId, userId);
+        logger.debug("POST /collaborations/{}/participants/{}/state: Accept Participation.",
+                collaborationId, userId);
 
         try {
             collaborationService.acceptParticipation(collaborationId, userId);
@@ -121,7 +123,8 @@ public class CollaborationController {
     @NewSpan("controller-end-participation")
     public ResponseEntity<?> endParticipation(@PathVariable("collaboration-id") UUID collaborationId,
             @PathVariable("user-id") UUID userId) {
-        logger.debug("DELETE /collaborations/{}/participants/{}: End Participation.", collaborationId, userId);
+        logger.debug("DELETE /collaborations/{}/participants/{}: End Participation.",
+                collaborationId, userId);
 
         try {
             collaborationService.endParticipation(collaborationId, userId);
@@ -162,7 +165,8 @@ public class CollaborationController {
 
     @GetMapping(value = "/collaborations", produces = {"application/json"})
     @NewSpan("controller-fetch-collaboration-by-userid")
-    public ResponseEntity<List<CollaborationResponseDto>> fetchCollaborationByUserId(@RequestParam("user-id") UUID userId) {
+    public ResponseEntity<List<CollaborationResponseDto>> fetchCollaborationByUserId(
+            @RequestParam("user-id") UUID userId) {
         logger.debug("GET /collaborations?user-id={}: Fetch Collaboration by user-id.", userId);
 
         logger.trace("Fetching Collaborations by user-id {}.", userId);

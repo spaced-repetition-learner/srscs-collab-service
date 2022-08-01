@@ -13,7 +13,8 @@ public class CardDisabled extends AbstractConsumerEvent {
     @Getter
     private final @NotNull CardDisabledDto payload;
 
-    public CardDisabled(@NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
+    public CardDisabled(@NotNull ConsumerRecord<String, String> event)
+            throws JsonProcessingException {
         super(event);
         this.payload = CardDisabledDto.makeFromSerialization(event.value());
     }

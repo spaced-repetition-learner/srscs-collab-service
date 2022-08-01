@@ -52,7 +52,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> findUserByUserId(UUID userId) {
-        UserByUserIdMap userByUserIdMap = cassandraTemplate.selectOne(query(where("user_id").is(userId)),
+        UserByUserIdMap userByUserIdMap = cassandraTemplate.selectOne(
+                query(where("user_id").is(userId)),
                 UserByUserIdMap.class);
         if (userByUserIdMap != null) {
             try {
@@ -67,7 +68,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> findUserByUsername(Username username) {
-        UserByUsernameMap userByUsernameMap = cassandraTemplate.selectOne(query(where("username").is(username.getUsername())),
+        UserByUsernameMap userByUsernameMap = cassandraTemplate.selectOne(
+                query(where("username").is(username.getUsername())),
                 UserByUsernameMap.class);
         if (userByUsernameMap != null) {
             try {
