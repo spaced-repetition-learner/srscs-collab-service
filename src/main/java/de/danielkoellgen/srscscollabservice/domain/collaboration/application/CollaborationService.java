@@ -55,6 +55,10 @@ public class CollaborationService {
                 .toList();
         log.debug("{} / {} Users fetched. {}", invitedUsers.size(), usernames.size(), invitedUsers);
 
+        if (invitedUsers.size() != usernames.size()) {
+            throw new NoSuchElementException("User not found.");
+        }
+
         Collaboration collaboration = Collaboration.startNewCollaboration(collaborationName,
                 invitedUsers);
         log.debug("New Collaboration: {}", collaboration);
