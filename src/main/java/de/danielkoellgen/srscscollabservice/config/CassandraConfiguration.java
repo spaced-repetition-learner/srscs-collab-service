@@ -20,6 +20,19 @@ public class CassandraConfiguration extends AbstractCassandraConfiguration {
         this.keySpace = keySpace;
     }
 
+//    @Override
+//    public CassandraCustomConversions customConversions() {
+//
+//        List<Converter<?, ?>> converters = new ArrayList<>();
+//
+////        converters.add(new LocalDateTimeToString());
+////        converters.add(new StringToLocalDateTime());
+//        converters.add(new DateToLocalDateTime());
+//        converters.add(new LocalDateTimeToDate());
+//
+//        return new CassandraCustomConversions(converters);
+//    }
+
     /*
      * Provide a contact point to the configuration.
      */

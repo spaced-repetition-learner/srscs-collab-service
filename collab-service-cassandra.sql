@@ -17,6 +17,8 @@ DROP TABLE IF EXISTS collaborationcard_by_collaborationid;
 DROP TABLE IF EXISTS collaborationcard_by_correlationid;
 DROP TABLE IF EXISTS collaborationcard_by_rootcardid;
 DROP TABLE IF EXISTS collaborationcard_by_cardid;
+DROP TABLE IF EXISTS collaborationcardevent;
+DROP TABLE IF EXISTS collaborationcardeventlock;
 
 DROP TYPE IF EXISTS participation_state;
 
@@ -99,6 +101,19 @@ CREATE TABLE collaborationcard_by_rootcardid (
     user_id UUID,
     card_id UUID,
     PRIMARY KEY ( root_card_id, correlation_id )
+);
+
+CREATE TABLE collaborationcardevent (
+    collaboration_card_id UUID,
+    root_card_id UUID,
+    created_at TEXT,
+    PRIMARY KEY ( collaboration_card_id, root_card_id )
+);
+
+CREATE TABLE collaborationcardeventlock (
+    collaboration_card_id UUID,
+    participant_user_id UUID,
+    PRIMARY KEY ( collaboration_card_id, participant_user_id )
 );
 
 CREATE TABLE collaborationcard_by_cardid (

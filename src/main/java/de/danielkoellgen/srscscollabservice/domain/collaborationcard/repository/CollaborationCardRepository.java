@@ -1,5 +1,6 @@
 package de.danielkoellgen.srscscollabservice.domain.collaborationcard.repository;
 
+import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.CardEvent;
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.CollaborationCard;
 import de.danielkoellgen.srscscollabservice.domain.collaborationcard.domain.Correlation;
 import org.jetbrains.annotations.NotNull;
@@ -23,4 +24,13 @@ public interface CollaborationCardRepository {
 
     Optional<CollaborationCard> findCollaborationCardWithCorrelation_byCardIdOnRootCardId(
             @NotNull UUID cardId);
+
+    List<CardEvent> findAllCardEventsByCollaborationCardIdAndRootCardId(
+            @NotNull UUID collaborationCardId, @NotNull UUID rootCardId);
+
+    void setLock(UUID collaborationCardId, UUID userId);
+
+    Boolean checkLock(UUID collaborationCardId, UUID userId);
+
+    void releaseLock(UUID collaborationCardId, UUID userId);
 }
