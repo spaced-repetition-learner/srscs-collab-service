@@ -126,6 +126,17 @@ public class CollaborationService {
                 collaboration.getName().getName());
     }
 
+    public void endParticipationViaDeck(@NotNull UUID deckId, @NotNull UUID userId) throws ParticipantStateException {
+        Optional<Collaboration> optCollaboration = collaborationRepository.findCollaborationByDeckId(deckId);
+        if (optCollaboration.isEmpty()) {
+            // TODO
+            return;
+        }
+        Collaboration collaboration = collaborationRepository.findCollaborationById(optCollaboration.get().getCollaborationId()).orElseThrow();
+        Participant updatedParticipant = collaboration.endParticipation(userId);
+        collaborationRepository.updateTerminatedParticipant(collaboration, updatedParticipant);
+    }
+
     public void addCorrespondingDeckToParticipant(@NotNull UUID correlationId, @NotNull UUID deckId,
             @NotNull UUID userId) {
         log.trace("Adding corresponding Deck to Participant...");

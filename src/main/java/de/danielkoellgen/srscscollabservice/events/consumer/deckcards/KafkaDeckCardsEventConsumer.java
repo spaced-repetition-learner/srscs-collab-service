@@ -68,7 +68,7 @@ public class KafkaDeckCardsEventConsumer {
             throws JsonProcessingException {
         Span newSpan = tracer.nextSpan().name("event-deck-disabled");
         try (Tracer.SpanInScope ws = this.tracer.withSpan(newSpan.start())) {
-            DeckDisabled deckDisabled = new DeckDisabled(event);
+            DeckDisabled deckDisabled = new DeckDisabled(collaborationService, event);
             log.info("Received 'DeckDisabledEvent' {}.", deckDisabled);
             deckDisabled.execute();
 

@@ -2,6 +2,7 @@ package de.danielkoellgen.srscscollabservice.events.consumer.deckcards;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.danielkoellgen.srscscollabservice.domain.collaboration.application.CollaborationService;
 import de.danielkoellgen.srscscollabservice.events.consumer.AbstractConsumerEvent;
 import de.danielkoellgen.srscscollabservice.events.consumer.deckcards.dto.DeckDisabledDto;
 import lombok.Getter;
@@ -10,18 +11,25 @@ import org.jetbrains.annotations.NotNull;
 
 public class DeckDisabled extends AbstractConsumerEvent {
 
+    private final @NotNull CollaborationService collaborationService;
+
     @Getter
     private final @NotNull DeckDisabledDto payload;
 
-    public DeckDisabled(@NotNull ConsumerRecord<String, String> event)
-            throws JsonProcessingException {
+    public DeckDisabled(@NotNull CollaborationService collaborationService,
+            @NotNull ConsumerRecord<String, String> event) throws JsonProcessingException {
         super(event);
+        this.collaborationService = collaborationService;
         this.payload = DeckDisabledDto.makeFromSerialization(event.value());
     }
 
     @Override
     public void execute() {
-        //NO IMPLEMENTATION
+        try {
+            collaborationService.endParticipationViaDeck(payload.deckId(), payload.userId());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
