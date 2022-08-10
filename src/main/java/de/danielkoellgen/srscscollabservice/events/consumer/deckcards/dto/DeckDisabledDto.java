@@ -8,7 +8,9 @@ import java.util.UUID;
 
 public record DeckDisabledDto(
 
-        @NotNull UUID deckId
+        @NotNull UUID deckId,
+
+        @NotNull UUID userId
 ) {
     public static @NotNull DeckDisabledDto makeFromSerialization(@NotNull String serialized)
             throws JsonProcessingException {
