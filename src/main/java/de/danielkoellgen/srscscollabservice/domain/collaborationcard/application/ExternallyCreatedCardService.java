@@ -43,27 +43,26 @@ public class ExternallyCreatedCardService {
 
     public void createNewCollaborationCard(@NotNull UUID cardId, @NotNull UUID deckId,
             @NotNull UUID userId) {
-
-        log.trace("Creating new collaboration-card...");
+        log.trace("Fetch Collaboration by deck-id '{}'...", deckId);
         Optional<Collaboration> collaboration = collaborationRepository
                 .findCollaborationByDeckId(deckId);
         if (collaboration.isEmpty()) {
-            log.trace("No matching collaboration found.");
+            log.info("No matching Collaboration found. Deck and Card don't belong to any.");
             return;
         }
-        log.debug("Collaboration fetched by deck-id: {}", collaboration.get());
+        log.debug("Fetched Collaboration: {}", collaboration.get());
 
         Pair<CollaborationCard, List<Correlation>> response = CollaborationCard.createNew(
                 collaboration.get(), cardId, userId, deckId);
         CollaborationCard newCollaborationCard = response.getValue0();
         List<Correlation> newCorrelations = response.getValue1();
-        log.debug("New collaboration-card created with {} unpublished correlations. {}",
-                newCorrelations.size(), newCollaborationCard);
 
         newCorrelations.forEach(x -> collaborationCardRepository.setLock(
                 newCollaborationCard.getCollaborationCardId(), x.userId()));
-
+        log.trace("{} event-locks acquired.", newCorrelations.size());
         collaborationCardRepository.saveNewCollaborationCard(newCollaborationCard);
+        log.info("New CollaborationCard created with {} pending Correlations.", newCorrelations.size());
+        log.debug("New CollaborationCard: {}", newCollaborationCard);
 
         newCorrelations.forEach(x -> kafkaProducer.send(
                 new CloneCard(

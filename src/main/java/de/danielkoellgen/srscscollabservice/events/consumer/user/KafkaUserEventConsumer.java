@@ -36,7 +36,7 @@ public class KafkaUserEventConsumer {
             case "user-created"     -> processUserCreatedEvent(event);
             case "user-disabled"    -> processUserDisabledEvent(event);
             default -> {
-                log.debug("Received event on 'cdc.users.0' of unknown type '{}'.", eventName);
+                log.warn("Received event on 'cdc.users.0' of unknown type '{}'.", eventName);
                 throw new RuntimeException("Received event on 'cdc.users.0' of unknown type '" +
                         eventName+"'.");
             }
@@ -50,6 +50,7 @@ public class KafkaUserEventConsumer {
             UserCreated userCreated = new UserCreated(userService, event);
             log.info("Received 'UserCreatedEvent'. {}", userCreated);
             userCreated.execute();
+            log.trace("Event processing completed.");
 
         } finally {
             newSpan.end();
@@ -63,6 +64,7 @@ public class KafkaUserEventConsumer {
             UserDisabled userDisabled = new UserDisabled(userService, event);
             log.info("Received 'UserDisabledEvent'. {}", userDisabled);
             userDisabled.execute();
+            log.trace("Event processing completed.");
 
         } finally {
             newSpan.end();

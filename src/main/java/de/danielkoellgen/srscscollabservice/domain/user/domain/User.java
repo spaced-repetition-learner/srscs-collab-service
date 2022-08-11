@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.annotation.Transient;
 
 import java.util.UUID;
 
@@ -20,6 +23,9 @@ public class User {
     @Nullable
     private Boolean isActive;
 
+    @Transient
+    private final static Logger log = LoggerFactory.getLogger(User.class);
+
     public User(@NotNull UUID userId, @NotNull Username username, @Nullable Boolean isActive) {
         this.userId = userId;
         this.username = username;
@@ -32,6 +38,7 @@ public class User {
 
     public void disableUser() {
         isActive = false;
+        log.debug("User.isActive set to '{}'.", isActive);
     }
 
     @Override

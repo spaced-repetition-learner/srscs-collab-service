@@ -52,12 +52,12 @@ public class CollaborationController {
                     requestDto.getMappedCollaborationName(),
                     requestDto.getMappedInvitedUsers());
             CollaborationResponseDto responseDto = new CollaborationResponseDto(startedCollaboration);
-            log.trace("Responding 201.");
-            log.debug("{}", responseDto);
+            log.info("Request successful. Responding w/ 201.");
+            log.debug("Response: {}", responseDto);
             return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 
         } catch (NoSuchElementException e) {
-            log.trace("Request failed with 404. Entity not found. {}", e.getMessage());
+            log.info("Request failed w/ 404. Entity not found. {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.", e);
         }
     }
@@ -76,16 +76,16 @@ public class CollaborationController {
             newParticipant = collaborationService.inviteUserToCollaboration(
                     collaborationId, requestDto.getMappedUsername());
             ParticipantResponseDto responseDto = new ParticipantResponseDto(newParticipant);
-            log.trace("Responding 201.");
-            log.debug("{}", responseDto);
+            log.info("Request successful. Responding w/ 201.");
+            log.debug("Response: {}", responseDto);
             return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 
         } catch (NoSuchElementException e) {
-            log.trace("Request failed with 404. Entity not found. {}", e.getMessage());
+            log.info("Request failed w/ 404. Entity not found. {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.",e);
 
         } catch (CollaborationStateException e) {
-            log.trace("Request failed with 403. {}", e.getMessage());
+            log.info("Request failed w/ 403. {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed.", e);
         }
     }
@@ -99,17 +99,17 @@ public class CollaborationController {
 
         try {
             collaborationService.acceptParticipation(collaborationId, userId);
-            log.trace("Responding 201.");
+            log.info("Request successful. Responding w/ 201.");
             return new ResponseEntity<>(HttpStatus.CREATED);
 
         } catch (NoSuchElementException e) {
-            log.trace("Request failed with 404.");
-            log.trace("{}", e.getMessage());
+            log.info("Request failed w/ 404.");
+            log.debug("Response: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.", e);
 
         } catch (ParticipantStateException e) {
-            log.trace("Request failed with 403.");
-            log.trace("{}", e.getMessage());
+            log.info("Request failed w/ 403.");
+            log.debug("Response: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed.", e);
         }
     }
@@ -123,15 +123,15 @@ public class CollaborationController {
 
         try {
             collaborationService.endParticipation(collaborationId, userId);
-            log.trace("Responding 200.");
+            log.info("Request successful. Responding w/ 200.");
             return new ResponseEntity<>(HttpStatus.OK);
 
         } catch (NoSuchElementException e) {
-            log.trace("Request failed with 404. {}", e.getMessage());
+            log.info("Request failed w/ 404. {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found.", e);
 
         } catch (ParticipantStateException e) {
-            log.trace("Request failed with 403. {}", e.getMessage());
+            log.info("Request failed w/ 403. {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed.", e);
         }
     }
@@ -146,12 +146,12 @@ public class CollaborationController {
             Collaboration collaboration = collaborationRepository
                     .findCollaborationById(collaborationId).orElseThrow();
             CollaborationResponseDto responseDto = new CollaborationResponseDto(collaboration);
-            log.trace("Responding 200.");
-            log.debug("{}", responseDto);
+            log.info("Request successful. Responding w/ 200.");
+            log.debug("Response: {}", responseDto);
             return new ResponseEntity<>(responseDto, HttpStatus.OK);
 
         } catch (NoSuchElementException e) {
-            log.trace("Request failed with 404. {}", e.getMessage());
+            log.info("Request failed w/ 404. {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Collaboration not found.", e);
         }
     }
@@ -167,7 +167,7 @@ public class CollaborationController {
                 .map(CollaborationResponseDto::new)
                 .toList();
         log.debug("{} Collaborations fetched. {}", collaborations.size(), collaborations);
-        log.trace("Responding 200.");
+        log.info("Request successful. Responding w/ 200.");
         return new ResponseEntity<>(collaborations, HttpStatus.OK);
     }
 }

@@ -21,7 +21,7 @@ public class KafkaProducer {
     }
 
     public void send(ProducerEvent event) {
-        log.debug("Publishing '{}'-event to '{}' kafka-topic. {}", event.getEventName(),
+        log.info("Publishing '{}' to '{}' kafka-topic. {}", event.getEventName(),
                 event.getTopic(), event);
 
         ProducerRecord<String, String> record = new ProducerRecord<>(event.getTopic(),

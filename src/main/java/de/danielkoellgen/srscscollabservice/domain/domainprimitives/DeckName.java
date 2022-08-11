@@ -28,8 +28,6 @@ public class DeckName extends AbstractStringValidation {
 
     @Override
     public String toString() {
-        return "DeckName{" +
-                "name='" + name + '\'' +
-                '}';
+        return name;
     }
 }

@@ -45,25 +45,26 @@ public class Collaboration {
 
     public @NotNull Participant inviteParticipant(@NotNull User user)
             throws CollaborationStateException{
+        log.trace("Inviting User to Collaboration.");
         if (getCollaborationStatus() == CollaborationStatus.TERMINATED) {
-            log.debug("Failed to invite User. Collaboration-Status is {}.",
-                    getCollaborationStatus());
+            log.warn("Failed to invite User. Collaboration-Status is {}.", getCollaborationStatus());
             throw new CollaborationStateException("Invite failed. " +
                     "Collaboration is already terminated.");
         }
         if (getParticipants().containsKey(user.getUserId())) {
-            log.debug("Failed to invite User. User already participates.");
+            log.warn("Failed to invite User. User already participates.");
             throw new CollaborationStateException("Invite failed. " +
                     "User is already participating.");
         }
         Participant newParticipant = Participant.createNewParticipant(user);
         participants.put(user.getUserId(), newParticipant);
-        log.debug("New Participant added to Collaboration: {}", newParticipant);
+        log.trace("New Participant added to Collaboration.");
         return newParticipant;
     }
 
     public @NotNull Participant acceptInvitation(@NotNull UUID userId)
             throws ParticipantStateException {
+        log.trace("Accepting Participation...");
         Participant participant = getParticipants().get(userId);
         participant.acceptParticipation();
         return participant;
@@ -71,6 +72,7 @@ public class Collaboration {
 
     public @NotNull Participant endParticipation(@NotNull UUID userId)
             throws ParticipantStateException {
+        log.trace("Ending Participation...");
         Participant participant = getParticipants().get(userId);
         participant.endParticipation();
         return participant;
@@ -78,6 +80,7 @@ public class Collaboration {
 
     public @NotNull Participant setDeck(@NotNull UUID userId, @NotNull UUID deckCorrelationId,
             @NotNull Deck deck) {
+        log.trace("Setting Deck for Participant.");
         Participant participant = getParticipants().get(userId);
         participant.setDeck(deckCorrelationId, deck);
         return participant;

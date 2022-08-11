@@ -45,9 +45,9 @@ public class CollaborationCardService {
 
     public void processNewlyExternallyCreatedCard(@Nullable UUID correlationId, @NotNull UUID cardId,
             @NotNull UUID deckId, @NotNull UUID userId) {
-        log.trace("Processing externally created Card...");
+        log.trace("Processing externally created Card '{}' in Deck '{}'...", cardId, deckId);
+        log.debug("Correlation-id is '{}'...", correlationId);
         if (correlationId != null) {
-            log.trace("Correlation-id is '{}'.", correlationId);
             if (updateCorrelationWithCard(correlationId, cardId)) {
                 return;
             }
@@ -58,39 +58,42 @@ public class CollaborationCardService {
     public void processExternallyOverriddenCard(@Nullable UUID correlationId,
             @NotNull UUID parentCardId, @NotNull UUID newCardId, @NotNull UUID deckId,
             @NotNull UUID userId) {
-        log.trace("Processing externally overriding Card.");
+        log.trace("Processing externally overriding Card...");
+        log.debug("Correlation-id is '{}'...", correlationId);
         if (correlationId != null) {
-            log.trace("Correlation-id is '{}'.", correlationId);
             if (updateCorrelationWithCard(correlationId, newCardId)) {
                 return;
             }
         }
-        externallyOverriddenCardService.updateToNewCardVersion(parentCardId, newCardId, deckId,
-                userId);
+        externallyOverriddenCardService.updateToNewCardVersion(parentCardId, newCardId,
+                deckId, userId);
     }
 
     private Boolean updateCorrelationWithCard(@NotNull UUID correlationId, @NotNull UUID cardId) {
-        log.trace("Updating correlation with card...");
+        log.trace("Updating matching CollaborationCard-Correlation with Card by correlation-id...");
 
+        log.trace("Fetching CollaborationCard by correlation-id '{}'...", correlationId);
         Optional<CollaborationCard> collaborationCardByCorrelation = collaborationCardRepository
                 .findCollaborationCardWithCorrelation_byCorrelationId(correlationId);
         if (collaborationCardByCorrelation.isEmpty()) {
-            log.trace("No matching collaboration-card by correlation-id found.");
+            log.info("No matching CollaborationCard was found. Card does not belong to any Collaboration.");
             return false;
         }
-        log.debug("CollaborationCard fetched by correlation-id: {}",
-                collaborationCardByCorrelation.get());
         CollaborationCard partialCollaborationCard = collaborationCardByCorrelation.get();
+        log.debug("Fetched CollaborationCard: {}", partialCollaborationCard);
+
         Correlation updatedCorrelation = partialCollaborationCard.addCard(correlationId, cardId);
         collaborationCardRepository.saveUpdatedCorrelation(partialCollaborationCard,
                 updatedCorrelation);
-        log.debug("Updated correlation: {}", updatedCorrelation);
+        log.info("Card added to matching Correlation.");
+        log.debug("Updated Correlation: {}", updatedCorrelation);
 
-        Optional<Correlation> latestCardUpdate = partialCollaborationCard
-                .updateToLatestCardEvent(updatedCorrelation);
+        log.trace("Checking if a newer update exists...");
+        Optional<Correlation> latestCardUpdate = partialCollaborationCard.updateToLatestCardEvent(
+                updatedCorrelation);
         if (latestCardUpdate.isPresent()) {
-            log.trace("Card update available. Sending command...");
-            log.debug("Latest update is {}", latestCardUpdate.get());
+            log.info("Newer Card-Version available. Starting update-process.");
+            log.debug("Latest Update-Correlation is {}", latestCardUpdate.get());
             kafkaProducer.send(new OverrideCard(
                     getTraceIdOrEmptyString(),
                     latestCardUpdate.get().correlationId(),
@@ -99,7 +102,7 @@ public class CollaborationCardService {
                             latestCardUpdate.get().parentCardId(),
                             latestCardUpdate.get().rootCardId())));
         } else {
-            log.trace("Card is the newest version.");
+            log.info("No Update available. Card has the newest version.");
             collaborationCardRepository.releaseLock(
                     partialCollaborationCard.getCollaborationCardId(),
                     updatedCorrelation.userId());

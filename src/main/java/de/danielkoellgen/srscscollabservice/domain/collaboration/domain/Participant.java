@@ -41,44 +41,50 @@ public class Participant {
 
     public void acceptParticipation() throws ParticipantStateException {
         if (getCurrentState().status() != ParticipantStatus.INVITED) {
-            log.debug("Failed to accept the Participation. Status is {} but should be {}.",
+            log.warn("Failed to accept the Participation. Status is '{}' but should be '{}'.",
                     getCurrentState().status(), ParticipantStatus.INVITED);
             throw new ParticipantStateException("Accepting a participation whose status is " +
                     getCurrentState().status() + " is not allowed.");
         }
+        log.trace("Accepting Participation. Adding new INVITATION_ACCEPTED State...");
         State newState = new State(ParticipantStatus.INVITATION_ACCEPTED, LocalDateTime.now());
         status = Stream.concat(status.stream(), Stream.of(newState)).toList();
         log.debug("New Accepted-State: {}", newState);
         deckCorrelationId = UUID.randomUUID();
-        log.debug("deck-correlation-id is {}", deckCorrelationId);
+        log.debug("New deck-correlation-id is '{}'.", deckCorrelationId);
     }
 
     public void endParticipation() throws ParticipantStateException {
         if (getCurrentState().status() == ParticipantStatus.INVITED) {
+            log.trace("Ending Participation... Current status is 'INVITED'.");
             State newState = new State(ParticipantStatus.INVITATION_DECLINED, LocalDateTime.now());
             status = Stream.concat(status.stream(), Stream.of(newState)).toList();
             log.debug("New State: {}", newState);
             return;
         }
         if (getCurrentState().status() == ParticipantStatus.INVITATION_ACCEPTED) {
+            log.trace("Ending Participation... Current status is 'INVITATION_ACCEPTED'.");
             State newState = new State(ParticipantStatus.TERMINATED, LocalDateTime.now());
             status = Stream.concat(status.stream(), Stream.of(newState)).toList();
             log.debug("New State: {}", newState);
             return;
         }
 
-        log.debug("Failed to end Participation. Status is {}.", getCurrentState().status());
+        log.warn("Failed to end Participation. Current Status is {}.", getCurrentState().status());
         throw new ParticipantStateException("Ending a participation whose status is " +
                 getCurrentState().status() + " is not allowed.");
     }
 
     public void setDeck(@NotNull UUID deckCorrelationId, @NotNull Deck deck) {
         if (!this.deckCorrelationId.equals(deckCorrelationId)) {
+            log.warn("Failed to add Deck to Participant. Correlation-ids do not match. " +
+                    "Delivered deck-correlation-id is '{}', participant-correlation-id is '{}'.",
+                    deckCorrelationId, this.deckCorrelationId);
             throw new IllegalArgumentException("Deck does not match deckCorrelationId. Current id is " +
                     this.deckCorrelationId + ", argument-id is " + deckCorrelationId);
         }
         this.deck = deck;
-        log.trace("Deck added to Participant.");
+        log.debug("Deck '{}' added to Participant.", deck.getDeckId());
     }
 
     public @NotNull State getCurrentState() {

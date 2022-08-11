@@ -30,8 +30,6 @@ public class Username extends AbstractStringValidation {
 
     @Override
     public String toString() {
-        return "Username{" +
-                "username='" + username + '\'' +
-                '}';
+        return username;
     }
 }

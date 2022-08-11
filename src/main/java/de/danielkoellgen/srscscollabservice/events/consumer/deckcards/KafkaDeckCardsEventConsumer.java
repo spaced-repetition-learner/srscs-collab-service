@@ -43,8 +43,7 @@ public class KafkaDeckCardsEventConsumer {
             case "card-overridden"  -> processCardOverriddenEvent(event);
             case "card-disabled"    -> processCardDisabledEvent(event);
             default -> {
-                log.debug("Received event on 'cdc.decks-cards.0' of unknown type '{}'.",
-                        eventName);
+                log.warn("Received event on 'cdc.decks-cards.0' of unknown type '{}'.", eventName);
                 throw new RuntimeException("Received event on 'cdc.decks-cards.0' of unknown type '" +
                         eventName+"'.");
             }
@@ -58,6 +57,7 @@ public class KafkaDeckCardsEventConsumer {
             DeckCreated deckCreated = new DeckCreated(collaborationService, event);
             log.info("Received 'DeckCreatedEvent' {}.", deckCreated);
             deckCreated.execute();
+            log.trace("Event processing completed.");
 
         } finally {
             newSpan.end();
@@ -71,6 +71,7 @@ public class KafkaDeckCardsEventConsumer {
             DeckDisabled deckDisabled = new DeckDisabled(collaborationService, event);
             log.info("Received 'DeckDisabledEvent' {}.", deckDisabled);
             deckDisabled.execute();
+            log.trace("Event processing completed.");
 
         } finally {
             newSpan.end();
@@ -84,6 +85,7 @@ public class KafkaDeckCardsEventConsumer {
             CardCreated cardCreated = new CardCreated(collaborationCardService, event);
             log.info("Received 'CardCreatedEvent' {}.", cardCreated);
             cardCreated.execute();
+            log.trace("Event processing completed.");
 
         } finally {
             newSpan.end();
@@ -97,6 +99,7 @@ public class KafkaDeckCardsEventConsumer {
             CardOverridden cardOverridden = new CardOverridden(collaborationCardService, event);
             log.info("Received 'CardOverriddenEvent'. {}", cardOverridden);
             cardOverridden.execute();
+            log.trace("Event processing completed.");
 
         } finally {
             newSpan.end();
@@ -110,6 +113,7 @@ public class KafkaDeckCardsEventConsumer {
             CardDisabled cardDisabled = new CardDisabled(event);
             log.info("Received 'CardOverriddenEven'. {}", cardDisabled);
             cardDisabled.execute();
+            log.trace("Event processing completed.");
 
         } finally {
             newSpan.end();
